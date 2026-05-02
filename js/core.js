@@ -1,9 +1,17 @@
-// NEON ARCADE OS - CORE v1.1
+// NEON ARCADE OS - CORE v1.6
 // Sem sw.js, sem cache chato. Só funciona.
 
 const JOGOS = [
   { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' },
-  { id: 'breakout', nome: '🧱 NEON BREAKOUT', arquivo: './games/breakout.js' }
+  { id: 'breakout', nome: '🧱 NEON BREAKOUT', arquivo: './games/breakout.js' },
+  { id: 'hacker', nome: '👾 NEON HACKER', arquivo: './games/hacker.js' },
+  { id: 'racer', nome: '🏎️ NEON RACER', arquivo: './games/racer.js' },
+  { id: 'byte', nome: '🦠 NEON BYTE', arquivo: './games/byte.js' },
+  { id: 'dash', nome: '▲ NEON DASH', arquivo: './games/dash.js' },
+  { id: 'pong', nome: '🏓 NEON PONG', arquivo: './games/pong.js' },
+  { id: 'space', nome: '🚀 NEON SPACE', arquivo: './games/space.js' },
+  { id: 'tetris', nome: '⬜ NEON TETRIS', arquivo: './games/tetris.js' },
+  { id: 'flappy', nome: '🐦 NEON FLAPPY', arquivo: './games/flappy.js' }
 ];
 
 let jogoAtivo = null;
@@ -80,13 +88,15 @@ function carregarJogo(idJogo) {
         if (funcaoIniciar) {
             jogoAtivo = funcaoIniciar(document.getElementById('canvas'));
         } else {
-            alert(`Função iniciar${idJogo.charAt(0).toUpperCase() + idJogo.slice(1)} não encontrada!`);
+            alert(`Função iniciar${idJogo.charAt(0).toUpperCase() + idJogo.slice(1)} não encontrada no arquivo!`);
             voltarMenu();
         }
     };
 
     script.onerror = () => {
-        alert(`Erro ao carregar ${jogo.nome}. Verifica se o arquivo games/${idJogo}.js existe.`);
+        // Mensagem amigável pra jogo que ainda não existe
+        alert(`${jogo.nome}\n\n🚧 EM BREVE 🚧\n\nEsse jogo ainda não foi adicionado.\nCria o arquivo games/${idJogo}.js pra liberar!`);
+        voltarMenu();
     };
 
     document.head.appendChild(script);
