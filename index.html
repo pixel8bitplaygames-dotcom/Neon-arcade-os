@@ -105,8 +105,522 @@
         </div>
     </div>
 
-    <script>
-        // COLA O RESTO DO JAVASCRIPT AQUI - TE MANDO NA PRÓXIMA MSG PRA NÃO CORTAR
+        <script>
+        const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
+        let jogoAtivo = "", pausado = false, pontos = 0, recorde = 0, particulas = [], animFrameId, timeoutId, gameOverAtivo = false;
+        let tStartX = 0, tStartY = 0, mudouDirecaoNesteFrame = false, estrelas = [];
+        let eventoInstalar = null;
+
+        window.addEventListener('load', () => {
+            let progresso = 0;
+            const barra = document.getElementById('barra-loading');
+            const interval = setInterval(() => {
+                progresso += 2;
+                barra.style.width = progresso + '%';
+                if (progresso >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('tela-inicial').classList.remove('ativa');
+                        document.getElementById('tela-menu').classList.add('ativa');
+                    }, 300);
+                }
+            }, 30);
+            
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js');
+            }
+        });
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            eventoInstalar = e;
+            document.getElementById('btn-instalar').style.display = 'block';
+        });
+
+        document.getElementById('btn-instalar').addEventListener('click', async () => {
+            if (!eventoInstalar) return;
+            eventoInstalar.prompt();
+            await eventoInstalar.userChoice;
+            eventoInstalar = null;
+            document.getElementById('btn-instalar').style.display = 'none';
+        });
+
+        function setNeon(color, blur = 10) { ctx.shadowBlur = blur; ctx.shadowColor = color; ctx.fillStyle = color; ctx.strokeStyle = color; }
+        function resetNeon() { ctx.shadowBlur = 0; }
+
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        function bip(f, t, d, v=0.05) { if(!audioCtx) return; try { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
+
+        function criarExplosao(x, y, cor) { for(let i=0; i<20; i++) particulas.push({ x, y, vx:(Math.random()-0.5)*15, vy:(Math.random()-0.5)*15, vida:1, cor, g: 0.15, size: 2 + Math.random()*3 }); }
+        function desenharParticulas() { particulas.forEach((p, i) => { p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.vida-=0.02; if(p.vida<=0) particulas.splice(i,1); else { setNeon(`rgba(${p.cor},${p.vida})`, 5); ctx.fillRect(p.x,p.y,p.size||3,p.size||3); resetNeon(); } }); }
+        function moverEstrelas() { ctx.fillStyle = "rgba(255,255,255,0.3)"; estrelas.forEach(est => { ctx.beginPath(); ctx.arc(est.x, est.y, est.s, 0, Math.PI*2); ctx.fill(); if(jogoAtivo === 'space' || jogoAtivo === 'hacker') { est.y += est.s * 2; if(est.y > 550) est.y = 0; } }); }
+
+        // --- COBRINHA ---
+        let snk, mc, sDx, sDy, sV;
+        function iniciarSnake() {
+            cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
+            jogoAtivo='snake'; pontos=0; sDx=1; sDy=0; sV=150; snk=[{x:10,y:10},{x:9,y:10}]; mc={x:15,y:15};
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            carregarRecorde(); loopSnake();
+        }
+        function desenharRostoCobra(x, y) {
+            setNeon("#0ff", 15);
+            ctx.fillRect(x*20+1, y*20+1, 18, 18);
+            ctx.fillStyle = "#000";
+            let oX = sDx!== 0? (sDx > 0? 12 : 4) : 4;
+            let oY = sDy!== 0? (sDy > 0? 12 : 4) : 4;
+            ctx.fillRect(x*20+oX, y*20+oY, 4, 4);
+            if(sDx!== 0) ctx.fillRect(x*20+oX, y*20+(oY === 4? 12 : 4), 4, 4);
+            else ctx.fillRect(x*20+(oX === 4? 12 : 4), y*20+oY, 4, 4);
+            if(Math.floor(Date.now()/300) % 2 === 0) {
+                ctx.fillStyle = "#f44";
+                let lX = x*20+10, lY = y*20+10;
+                if(sDx > 0) ctx.fillRect(lX+10, lY-2, 6, 4);
+                else if(sDx < 0) ctx.fillRect(lX-16, lY-2, 6, 4);
+                else if(sDy > 0) ctx.fillRect(lX-2, lY+10, 4, 6);
+                else if(sDy < 0) ctx.fillRect(lX-2, lY-16, 4, 6);
+            }
+            resetNeon();
+        }
+        function loopSnake() {
+            if(pausado || jogoAtivo!== 'snake' || gameOverAtivo) return;
+            mudouDirecaoNesteFrame = false; ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+            setNeon("#f44", 15); ctx.beginPath(); ctx.arc(mc.x*20+10, mc.y*20+10, 8, 0, Math.PI*2); ctx.fill(); resetNeon();
+            snk.forEach((p, i) => { if(i===0) desenharRostoCobra(p.x, p.y); else { setNeon("#0aa", 5); ctx.fillRect(p.x*20+2, p.y*20+2, 16, 16); resetNeon(); } });
+            let h={x:snk[0].x+sDx, y:snk[0].y+sDy};
+            if(h.x<0||h.x>=20||h.y<0||h.y>=27||snk.some(s=>s.x===h.x&&s.y===h.y)){ gameOver(); return; }
+            snk.unshift(h); if(h.x===mc.x&&h.y===mc.y){ pontos+=10; criarExplosao(h.x*20+10,h.y*20+10,"255,68,68"); mc={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*25)}; bip(440,'sine',0.1); if(sV > 70) sV -= 2; } else snk.pop();
+            document.getElementById('score-live').textContent=pontos; timeoutId=setTimeout(loopSnake,sV);
+        }
+
+        // --- BLOCOS COM FASES ---
+        let padX, bX, bY, bDX, bDY, brks=[], lBk=1, faseBreakout=1;
+        function iniciarBreakout(reset) {
+            cancelAnimationFrame(animFrameId);
+            if(reset){pontos=0; lBk=1; faseBreakout=1;}
+            jogoAtivo='breakout'; padX=155; bX=200; bY=400;
+            bDX=3 + faseBreakout*0.5;
+            bDY=-(3 + faseBreakout*0.5);
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "BLOCOS - FASE " + faseBreakout;
+            carregarRecorde();
+            brks=[];
+            let linhas = 4 + Math.min(faseBreakout, 4);
+            for(let c=0; c<5; c++){
+                brks[c]=[];
+                for(let r=0; r<linhas; r++){
+                    let a = (Math.random() > 0.2)? 1 : 0;
+                    let vida = faseBreakout > 3? (Math.random() > 0.7? 2 : 1) : 1;
+                    brks[c][r]={s:a, vida:vida, c:`hsl(${(r*40) + (lBk*30)},100%,60%)`};
+                }
+            }
+            loopBreakout();
+        }
+
+        function loopBreakout() {
+            if(pausado || jogoAtivo!=='breakout' || gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+
+            setNeon("#ff00ff", 15);
+            ctx.font = "14px Orbitron";
+            ctx.textAlign = "center";
+            ctx.fillText("FASE " + faseBreakout, 200, 40);
+            resetNeon();
+
+            for(let c=0; c<5; c++){
+                for(let r=0; r<brks[c].length; r++){
+                    let b=brks[c][r];
+                    if(b.s > 0){
+                        let bx=c*78+10, by=r*25+80;
+                        setNeon(b.vida > 1? "#fff" : b.c, b.vida > 1? 20 : 10);
+                        ctx.fillRect(bx,by,70,20);
+                        resetNeon();
+                        if(bX>bx && bX<bx+70 && bY>by && bY<by+20){
+                            bDY*=-1;
+                            b.vida--;
+                            if(b.vida <= 0) {
+                                b.s=0;
+                                pontos+=15;
+                                criarExplosao(bx+35,by+10,"255,0,255");
+                            } else {
+                                criarExplosao(bx+35,by+10,"255,255,255");
+                            }
+                            bip(600,'square',0.05);
+                        }
+                    }
+                }
+            }
+
+            if(!brks.flat().some(b=>b.s > 0)){
+                faseBreakout++;
+                lBk++;
+                ctx.save();
+                setNeon("#00feff", 30);
+                ctx.font = "32px Orbitron";
+                ctx.textAlign = "center";
+                ctx.fillText("FASE " + faseBreakout, 200, 275);
+                resetNeon();
+                ctx.restore();
+                bip(800, 'sine', 0.3);
+                setTimeout(() => iniciarBreakout(false), 1500);
+                return;
+            }
+
+            setNeon("#fff", 15); ctx.beginPath(); ctx.arc(bX,bY,8,0,Math.PI*2); ctx.fill(); resetNeon();
+            setNeon("#0ff", 20); ctx.fillRect(padX,520,90,12); resetNeon();
+            bX+=bDX; bY+=bDY;
+            if(bX<8||bX>392) bDX*=-1;
+            if(bY<10) bDY*=-1;
+            if(bY>515 && bY<535&& bX>padX && bX<padX+90){ bY=515; bDY=-Math.abs(bDY); bip(300,'sine',0.05); }
+            if(bY>550){ gameOver(); return; }
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBreakout);
+        }
+
+        // --- GALÁXIA ---
+        let nX, ts=[], ins=[], fI=0, caixas=[], powerUp=0;
+        function iniciarSpace() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='space'; pontos=0; nX=175; ts=[]; ins=[]; caixas=[]; fI=0; powerUp=0;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "SISTEMA FALHOU";
+            carregarRecorde(); loopSpace();
+        }
+        function desenharNaveStilosa(x, y, p) {
+            const power = p > 0;
+            if(power) { setNeon("#f0f", 25 + Math.sin(fI*0.3)*10); } else { setNeon("#f44", 20); }
+            ctx.fillRect(x+20, y, 10, 10);
+            ctx.fillRect(x+15, y+10, 20, 10);
+            ctx.fillRect(x+10, y+20, 30, 15);
+            ctx.fillRect(x, y+35, 50, 10);
+            setNeon("#0ff", 10);
+            ctx.fillRect(x+22, y+15, 6, 6);
+            if(Math.floor(fI/4) % 2 === 0) {
+                setNeon("#ff0", 15);
+                ctx.fillRect(x+20, y+45, 10, 12);
+                setNeon("#f80", 10);
+                ctx.fillRect(x+22, y+50, 6, 8);
+            }
+            resetNeon();
+        }
+        function desenharMeteoro(inv) {
+            ctx.save();
+            ctx.translate(inv.x+17, inv.y+17);
+            ctx.rotate(inv.rot);
+            inv.rot += inv.rotV;
+            setNeon("rgba(255,107,0,0.7)", 15);
+            ctx.beginPath();
+            ctx.moveTo(0, -20); ctx.lineTo(14, -14); ctx.lineTo(20, 0); ctx.lineTo(14, 14);
+            ctx.lineTo(0, 20); ctx.lineTo(-14, 14); ctx.lineTo(-20, 0); ctx.lineTo(-14, -14);
+            ctx.closePath(); ctx.fill();
+            setNeon("#444", 5);
+            ctx.beginPath(); ctx.arc(-6, -4, 3, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(4, 6, 4, 0, Math.PI*2); ctx.fill();
+            resetNeon();
+            ctx.restore();
+        }
+        function desenharBonusBateria(x, y) {
+            if(Math.floor(fI/8) % 2 === 0) {
+                setNeon("#f0f", 25);
+                ctx.strokeStyle = "#f0f"; ctx.lineWidth = 2;
+                ctx.strokeRect(x-4, y-4, 28, 38);
+            }
+            setNeon("#f0f", 20);
+            ctx.beginPath();
+            ctx.moveTo(x+10, y); ctx.lineTo(x+20, y+10); ctx.lineTo(x+15, y+30);
+            ctx.lineTo(x+5, y+30); ctx.lineTo(x, y+10); ctx.closePath(); ctx.fill();
+            setNeon("#fff", 10);
+            ctx.fillRect(x+8, y+8, 4, 8);
+            resetNeon();
+        }
+        function loopSpace() {
+            if(pausado||jogoAtivo!=='space'||gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+            desenharNaveStilosa(nX, 480, powerUp);
+            let cad=powerUp>0?6:18;
+            if(fI%cad===0){ ts.push({x:nX+22,y:470}); bip(800,'sine',0.02,0.01); }
+            if(powerUp>0) powerUp--;
+            ts.forEach((t,i)=>{ t.y-=12; setNeon("#fff", 10); ctx.fillRect(t.x,t.y,6,15); resetNeon(); if(t.y<0) ts.splice(i,1); });
+            if(fI%45===0) ins.push({ x:Math.random()*360, y:-40, v:3+(pontos/1500), rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*0.05 });
+            ins.forEach((inv,i)=>{
+                inv.y+=inv.v; desenharMeteoro(inv);
+                if(inv.y > 540) { document.getElementById('titulo-gameover').textContent = "DEFESA FALHOU"; gameOver(); return; }
+                ts.forEach((t,ti)=>{ if(t.x>inv.x&&t.x<inv.x+35&&t.y>inv.y&&t.y<inv.y+35){ ins.splice(i,1); ts.splice(ti,1); pontos+=20; criarExplosao(inv.x+17,inv.y+17,"255,107,0"); bip(200,'sawtooth',0.05); } });
+                if(inv.y>460 && inv.y<520 && inv.x>nX-10 && inv.x<nX+50){ document.getElementById('titulo-gameover').textContent = "SISTEMA FALHOU"; gameOver(); return; }
+            });
+            if(fI%400===0) caixas.push({x:Math.random()*360,y:-40});
+            caixas.forEach((c,i)=>{ c.y+=2.5; desenharBonusBateria(c.x, c.y); if(c.y>470 && c.y<520 && c.x>nX-5 && c.x<nX+55){ powerUp=200; caixas.splice(i,1); bip(1200,'sine',0.2); } });
+            fI++; document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopSpace);
+        }
+
+        // --- NEON FLAP ---
+        let flapY, flapVel, flapGrav, flapCanos, flapFrame, flapScore;
+        function iniciarFlap() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='flap'; pontos=0; flapY=250; flapVel=0; flapGrav=0.5; flapCanos=[]; flapFrame=0; flapScore=0;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "VOO FALHOU";
+            carregarRecorde();
+            for(let i=0; i<3; i++) { flapCanos.push({x: 400 + i*200, gap: 150 + Math.random()*100}); }
+            loopFlap();
+        }
+        function loopFlap() {
+            if(pausado || jogoAtivo!=='flap' || gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+
+            flapCanos.forEach((cano, i) => {
+                cano.x -= 3;
+                setNeon("#0ff", 10);
+                ctx.fillRect(cano.x, 0, 50, cano.gap - 80);
+                ctx.fillRect(cano.x, cano.gap + 80, 50, 550 - cano.gap - 80);
+                resetNeon();
+
+                if(cano.x < -50) {
+                    cano.x = 400;
+                    cano.gap = 150 + Math.random()*100;
+                    pontos += 10;
+                }
+
+                if(50 < cano.x + 50 && 70 > cano.x && (flapY < cano.gap - 80 || flapY + 20 > cano.gap + 80)) {
+                    gameOver(); return;
+                }
+            });
+
+            flapVel += flapGrav;
+            flapY += flapVel;
+
+            setNeon("#ff6b00", 15);
+            ctx.beginPath();
+            ctx.ellipse(60, flapY, 15, 12, 0, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#000", 5);
+            ctx.beginPath();
+            ctx.arc(65, flapY-2, 3, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#ff00ff", 10);
+            ctx.beginPath();
+            ctx.moveTo(45, flapY); ctx.lineTo(35, flapY-5); ctx.lineTo(35, flapY+5); ctx.closePath(); ctx.fill();
+            resetNeon();
+
+            if(flapY > 530 || flapY < 0) { gameOver(); return; }
+
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopFlap);
+        }
+
+        // --- NEON BLOBBY ---
+        let blobbyX, blobbyY, blobbyVelY, blobbyGrav, blobbyObst, blobbyFrame, blobbyChao, blobbyPulando;
+        function iniciarHacker() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='hacker'; pontos=0;
+            blobbyX=80; blobbyY=400; blobbyVelY=0; blobbyGrav=0.8; blobbyObst=[]; blobbyFrame=0; blobbyChao=450; blobbyPulando=false;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "BLOBBY FALHOU";
+            carregarRecorde();
+            for(let i=0; i<2; i++) {
+                blobbyObst.push({
+                    x: 600 + i*450,
+                    tipo: Math.floor(Math.random()*3),
+                    h: 35 + Math.random()*25
+                });
+            }
+            loopBlobby();
+        }
+
+        function desenharBlobby(x, y) {
+            setNeon("#39ff14", 20);
+            ctx.fillRect(x, y, 30, 30);
+
+            ctx.fillStyle = "#000";
+            ctx.fillRect(x+6, y+8, 4, 4);
+            ctx.fillRect(x+20, y+8, 4, 4);
+            ctx.fillRect(x+10, y+18, 10, 2);
+
+            if(blobbyPulando) {
+                setNeon("#f44", 10);
+                ctx.fillRect(x+13, y+20, 4, 8);
+            }
+
+            if(!blobbyPulando && Math.floor(blobbyFrame/3) % 2 === 0) {
+                setNeon("rgba(57,255,20,0.5)", 5);
+                ctx.fillRect(x-10, y+10, 8, 8);
+                ctx.fillRect(x-18, y+15, 6, 6);
+            }
+            resetNeon();
+        }
+
+        function desenharFirewall(obs) {
+            setNeon("#f44", 15);
+            ctx.fillRect(obs.x, blobbyChao - obs.h, 30, obs.h);
+            setNeon("#ff6b00", 10);
+            for(let i=0; i<obs.h; i+=10) {
+                ctx.fillRect(obs.x+5, blobbyChao - obs.h + i, 20, 2);
+            }
+            setNeon("#fff", 15);
+            ctx.font = "20px Orbitron";
+            ctx.fillText("X", obs.x+8, blobbyChao - obs.h/2 + 7);
+            resetNeon();
+        }
+
+        function desenharBug(obs) {
+            setNeon("#9d00ff", 15);
+            ctx.beginPath();
+            ctx.arc(obs.x+15, blobbyChao - obs.h/2, obs.h/2, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#000", 10);
+            ctx.fillRect(obs.x+10, blobbyChao - obs.h/2 - 5, 10, 10);
+            resetNeon();
+        }
+
+        function desenharLaser(obs) {
+            setNeon("#ff00ff", 20);
+            ctx.fillRect(obs.x, blobbyChao - obs.h, 5, obs.h);
+            setNeon("#fff", 15);
+            ctx.fillRect(obs.x+2, blobbyChao - obs.h, 1, obs.h);
+            resetNeon();
+        }
+
+        function loopBlobby() {
+            if(pausado || jogoAtivo!=='hacker' || gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+
+            setNeon("#0ff", 10);
+            ctx.fillRect(0, blobbyChao, 400, 100);
+            resetNeon();
+
+            blobbyVelY += blobbyGrav;
+            blobbyY += blobbyVelY;
+
+            if(blobbyY > blobbyChao - 30) {
+                blobbyY = blobbyChao - 30;
+                blobbyVelY = 0;
+                blobbyPulando = false;
+            }
+
+            desenharBlobby(blobbyX, blobbyY);
+
+            let velocidade = 4 + pontos/800;
+
+            blobbyObst.forEach((obs, i) => {
+                obs.x -= velocidade;
+
+                if(obs.tipo === 0) desenharFirewall(obs);
+                else if(obs.tipo === 1) desenharBug(obs);
+                else desenharLaser(obs);
+
+                if(obs.x < -50) {
+                    let ultimoX = Math.max(...blobbyObst.map(o => o.x));
+                    obs.x = ultimoX + 400 + Math.random()*150;
+                    obs.tipo = Math.floor(Math.random()*3);
+                    obs.h = 35 + Math.random()*25;
+                    pontos += 10;
+                }
+
+                if(blobbyX + 22 > obs.x && blobbyX + 8 < obs.x + 30 && blobbyY + 30 > blobbyChao - obs.h) {
+                    gameOver(); return;
+                }
+            });
+
+            blobbyFrame++;
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBlobby);
+        }
+
+        // --- SISTEMA ---
+        function gameOver() {
+            gameOverAtivo = true; cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
+            salvarRecorde(); bip(100, 'sawtooth', 0.5, 0.1);
+            document.getElementById('score-final').textContent = "PONTOS: " + pontos;
+            document.getElementById('painel-gameover').style.display = 'block';
+        }
+        function reiniciarJogo() {
+            gameOverAtivo = false; pausado = false; particulas = [];
+            document.getElementById('painel-gameover').style.display = 'none';
+            if(jogoAtivo === 'snake') iniciarSnake();
+            else if(jogoAtivo === 'breakout') iniciarBreakout(true);
+            else if(jogoAtivo === 'space') iniciarSpace();
+            else if(jogoAtivo === 'flap') iniciarFlap();
+            else if(jogoAtivo === 'hacker') iniciarHacker();
+        }
+        function salvarRecorde() { if(pontos > recorde) { recorde = pontos; localStorage.setItem("recorde_" + jogoAtivo, recorde); document.getElementById('record-live').textContent = "RECORDE: " + recorde; } }
+        function carregarRecorde() { recorde = localStorage.getItem("recorde_" + jogoAtivo) || 0; document.getElementById('record-live').textContent = "RECORDE: " + recorde; }
+        function irParaMenuDireto() { cancelAnimationFrame(animFrameId); clearTimeout(timeoutId); jogoAtivo = ""; document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById('tela-menu').classList.add('ativa'); document.getElementById('painel-gameover').style.display = 'none'; }
+        function iniciarJogo(jogo) {
+            initAudio(); if(estrelas.length===0) { for(let i=0; i<50; i++) estrelas.push({x: Math.random()*400, y: Math.random()*550, s: Math.random()*2}); }
+            cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.getElementById('tela-jogo').classList.add('ativa');
+            if(jogo==='snake') iniciarSnake();
+            else if(jogo==='breakout') iniciarBreakout(true);
+            else if(jogo==='space') iniciarSpace();
+            else if(jogo==='flap') iniciarFlap();
+            else if(jogo==='hacker') iniciarHacker();
+        }
+        function alternarPausa() { if(gameOverAtivo) return; pausado =!pausado; document.getElementById('btn-pausa').textContent = pausado? "VOLTAR" : "PAUSAR"; if(!pausado) { if(jogoAtivo==='snake') loopSnake(); else if(jogoAtivo==='breakout') loopBreakout(); else if(jogoAtivo==='space') loopSpace(); else if(jogoAtivo==='flap') loopFlap(); else if(jogoAtivo==='hacker') loopBlobby(); } }
+
+        // --- CONTROLES TOUCH ---
+        canvas.addEventListener('touchstart', e => {
+            tStartX = e.touches[0].clientX;
+            tStartY = e.touches[0].clientY;
+            initAudio();
+
+            if(jogoAtivo==='flap' &&!pausado &&!gameOverAtivo) {
+                flapVel = -10;
+                bip(600, 'sine', 0.05);
+            }
+            if(jogoAtivo==='hacker' &&!pausado &&!gameOverAtivo && blobbyY >= blobbyChao - 31) {
+                blobbyVelY = -15;
+                blobbyPulando = true;
+                bip(400, 'square', 0.1);
+            }
+        }, {passive: true});
+
+        canvas.addEventListener('touchmove', e => {
+            if(pausado || gameOverAtivo) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const relX = (e.touches[0].clientX - rect.left) * (400 / rect.width);
+
+            if(jogoAtivo==='snake'){
+                if(mudouDirecaoNesteFrame) return;
+                const dx = e.touches[0].clientX - tStartX, dy = e.touches[0].clientY - tStartY;
+                if(Math.abs(dx) > 30 || Math.abs(dy) > 30){
+                    if(Math.abs(dx) > Math.abs(dy)){
+                        let nX = dx > 0? 1 : -1;
+                        if(nX!== -sDx) { sDx = nX; sDy = 0; mudouDirecaoNesteFrame = true; }
+                    } else {
+                        let nY = dy > 0? 1 : -1;
+                        if(nY!== -sDy) { sDy = nY; sDx = 0; mudouDirecaoNesteFrame = true; }
+                    }
+                    tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY;
+                }
+            } else if(jogoAtivo==='breakout') {
+                padX = Math.max(0, Math.min(310, relX - 45));
+            } else if(jogoAtivo==='space') {
+                nX = Math.max(0, Math.min(350, relX - 25));
+            }
+        }, {passive: false});
+
+        document.addEventListener('keydown', (e) => {
+            if(gameOverAtivo || pausado) return;
+
+            if(jogoAtivo==='flap' && (e.key === ' ' || e.key === 'ArrowUp')) {
+                e.preventDefault();
+                flapVel = -10;
+                bip(600, 'sine', 0.05);
+            }
+            if(jogoAtivo==='hacker' && (e.key === ' ' || e.key === 'ArrowUp') && blobbyY >= blobbyChao - 31) {
+                e.preventDefault();
+                blobbyVelY = -15;
+                blobbyPulando = true;
+                bip(400, 'square', 0.1);
+            }
+            if(jogoAtivo==='snake') {
+                if ((e.key === 'ArrowUp' || e.key === 'w') && sDy === 0) { sDx = 0; sDy = -1; }
+                else if ((e.key === 'ArrowDown' || e.key === 's') && sDy === 0) { sDx = 0; sDy = 1; }
+                else if ((e.key === 'ArrowLeft' || e.key === 'a') && sDx === 0) { sDx === -1; sDy = 0; }
+                else if ((e.key === 'ArrowRight' || e.key === 'd') && sDx === 0) { sDx = 1; sDy = 0; }
+            }
+        });
+
+        document.body.addEventListener('touchmove', (e) => {
+            if (jogoAtivo) e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
