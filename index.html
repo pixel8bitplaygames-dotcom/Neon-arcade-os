@@ -1,723 +1,844 @@
-<!DOCTYPE html>
-
+    <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Arcade OS - v10.3</title>
 
-    <title>Neon Arcade OS - v9.6</title>
-
-
-
-    <link rel="manifest" href="manifest.json">
-
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmVvbiBBcmNhZGUgT1MiLCJzaG9ydF9uYW1lIjoiTmVvbkFyY2FkZSIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGIxMTIwIiwidGhlbWVfY29sb3IiOiIjMDBmZWZmIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzUyNjAvNTI2MDQ5OC5wbmciLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5260/5260498.png">
-
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/5260/5260498.png">
 
-
-
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
-
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-
         *{margin:0;padding:0;box-sizing:border-box; touch-action: none; user-select: none;}
+        :root {
+            --neon-cyan: #00feff;
+            --neon-pink: #ff00ff;
+            --neon-purple: #9d00ff;
+            --neon-green: #39ff14;
+            --neon-orange: #ff6b00;
+            --bg-dark: #0b1120;
+            --text-glow: 0 0 10px currentColor, 0 0 20px currentColor;
+        }
 
         body{
-
-            font-family: 'Press Start 2P', 'Segoe UI', sans-serif;
-
-            background:#020205;
-
-            color:white;
-
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-dark);
+            color: #e0e0e0;
             height:100vh;
-
             overflow:hidden;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
             background: radial-gradient(ellipse at center, #0a0a1a 0%, #000 70%);
-
         }
-
-
 
         body::before {
-
             content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-
                         linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-
             z-index: 1000; background-size: 100% 4px, 4px 100%; pointer-events: none;
-
             animation: flicker 0.15s infinite;
-
         }
-
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.98; } }
 
+    .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 254, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 254, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
 
+    .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
 
-.tela { display: none; width: 100%; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
+    .tela { display: none; width: 100%; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
+    .ativa { display: flex; }
 
-.ativa { display: flex; }
+    .font-neon { font-family: 'Orbitron', sans-serif; }
+    .neon-text-cyan { color: var(--neon-cyan); text-shadow: var(--text-glow); }
 
-
-
-.logo-arcade {
-
-            font-size: 28px;
-
-            color: #0ff;
-
-            text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
-
+    .logo-arcade {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
             text-align: center;
-
             margin-bottom: 20px;
-
             font-weight: 900;
-
             animation: pulseNeon 2s ease-in-out infinite;
-
+        }
+        @keyframes pulseNeon {
+            0%, 100% { text-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan); }
+            50% { text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan), 0 0 60px var(--neon-cyan); }
         }
 
-        @keyframes pulseNeon { 0%, 100% { text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff; } 50% { text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff, 0 0 60px #0ff; } }
-
-
-
-.icon-controle {
-
+    .icon-controle {
             width: 80px;
-
             height: 80px;
-
             margin-bottom: 20px;
-
-            filter: drop-shadow(0 0 15px #0ff);
-
+            filter: drop-shadow(0 0 15px var(--neon-cyan));
             animation: flutuar 2s ease-in-out infinite;
-
         }
-
         @keyframes flutuar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-
-
-.btn-principal {
-
+    .btn-principal {
             padding: 18px 40px;
-
             font-size: 14px;
-
-            font-family: 'Press Start 2P', sans-serif;
-
+            font-family: 'Orbitron', sans-serif;
             color: #000;
-
-            background: #0ff;
-
+            background: var(--neon-cyan);
             border: none;
-
             border-radius: 0px;
-
             cursor: pointer;
-
             box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 0 2px #000;
-
             transition: 0.2s;
-
             z-index: 110;
-
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
             animation: btnGlow 1.5s ease-in-out infinite;
-
         }
+        @keyframes btnGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 0 2px #000; }
+            50% { box-shadow: 0 0 40px rgba(0,255,255,0.8), inset 0 0 0 2px #000; }
+        }
+    .btn-principal:active { transform: scale(0.95); background: #fff; }
 
-        @keyframes btnGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 0 2px #000; } 50% { box-shadow: 0 0 40px rgba(0,255,255,0.8), inset 0 0 0 2px #000; } }
-
-.btn-principal:active { transform: scale(0.95); background: #fff; }
-
-
-
-#btn-instalar {
-
+        #btn-instalar {
             background: #ff6b00;
-
             display: none;
-
             margin-bottom: 20px;
-
-            animation: btnGlow 1.5s ease-in-out infinite;
-
         }
 
-
-
-.container-jogos { display: grid; grid-template-columns: 1fr; gap: 15px; width: 85%; max-width: 400px; }
-
-.jogo-card {
-
-            background: rgba(0,255,255,0.05);
-
-            border: 2px solid #0ff;
-
-            border-radius: 0px;
-
+    .container-jogos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            width: 90%;
+            max-width: 800px;
             padding: 20px;
+        }
 
+    .neon-card {
+            background: linear-gradient(135deg, rgba(19, 27, 46, 0.9), rgba(11, 17, 32, 0.9));
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 0px;
+            padding: 15px;
             text-align: center;
-
-            font-size: 12px;
-
-            color: #0ff;
-
+            font-size: 10px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
             cursor: pointer;
-
             transition: 0.3s;
-
             box-shadow: 0 0 10px rgba(0,255,255,0.3), inset 0 0 10px rgba(0,255,255,0.1);
-
         }
-
-.jogo-card:active {
-
+    .neon-card:active {
             background: rgba(0,255,255,0.2);
-
             box-shadow: 0 0 30px rgba(0,255,255,0.8), inset 0 0 20px rgba(0,255,255,0.3);
-
             transform: scale(0.98);
-
         }
 
+    .card-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
+    .pulse-border {
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 254, 255, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(0, 254, 255, 0.8); }
+        }
 
         canvas {
-
-            border: 3px solid #0ff;
-
+            border: 3px solid var(--neon-cyan);
             background: radial-gradient(circle, #0a0a1a 0%, #000 100%);
-
             width: 95vw;
-
             height: 70vh;
-
             max-height: 580px;
-
             box-shadow: 0 0 20px rgba(0,255,255,0.4), inset 0 0 20px rgba(0,255,255,0.1);
-
             margin-top: 60px;
-
             image-rendering: pixelated;
-
         }
 
-
-
-     .header-jogo {
-
+    .header-jogo {
             width: 100%;
-
             display: flex;
-
             justify-content: space-between;
-
             padding: 12px 20px;
-
             position: absolute;
-
             top: 0;
-
             z-index: 10;
-
             background: rgba(0,0,0,0.5);
-
         }
-
-        #score-live { color: #0ff; font-size: 24px; text-shadow: 0 0 10px #0ff; }
-
-        #record-live { font-size: 8px!important; }
+        #score-live {
+            color: var(--neon-cyan);
+            font-size: 24px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+        #record-live { font-size: 8px!important; font-family: 'Orbitron', sans-serif; }
 
         #painel-gameover {
-
             display: none; position: absolute;
-
             background: rgba(5,5,15,0.98);
-
             padding: 30px;
-
             border-radius: 0px;
-
             border: 3px solid #f44;
-
             text-align: center;
-
             z-index: 200;
-
             backdrop-filter: blur(15px);
-
             width: 85%; max-width: 320px;
-
             box-shadow: 0 0 30px rgba(255,68,68,0.6);
-
         }
+        #titulo-gameover { font-size: 16px!important; font-family: 'Orbitron', sans-serif; }
+        #score-final { font-size: 12px!important; font-family: 'Orbitron', sans-serif; }
 
-        #titulo-gameover { font-size: 16px!important; }
-
-        #score-final { font-size: 12px!important; }
-
+        #barra-loading {
+            width: 0%;
+            height: 100%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: width 0.1s linear;
+        }
     </style>
-
 </head>
-
 <body>
-
-
+<div class="grid-bg"></div>
+<div class="scanline"></div>
 
     <div id="tela-inicial" class="tela ativa">
-
-        <img class="icon-controle" src="https://cdn-icons-png.flaticon.com/512/5260/5260498.png" alt="Pinky">
-
+        <img class="icon-controle" src="https://cdn-icons-png.flaticon.com/512/5260/5260498.png" alt="Neon Arcade">
         <h1 class="logo-arcade">NEON ARCADE</h1>
-
-        <button id="btn-instalar" class="btn-principal">📲 ADICIONAR A TELA INICIAL</button>
-
-        <button class="btn-principal" onclick="irParaLoading('menu')">INICIAR</button>
-
-    </div>
-
-
-
-    <div id="tela-loading" class="tela">
-
-        <div style="color: #0ff; letter-spacing: 2px; font-size: 10px;">UPDATING SYSTEM...</div>
-
-        <div style="width: 200px; height: 8px; background: #222; margin-top: 20px; border: 2px solid #0ff; overflow: hidden;">
-
-            <div id="barra" style="width: 0%; height: 100%; background: #0ff; box-shadow: 0 0 10px #0ff;"></div>
-
+        <div style="color: var(--neon-cyan); letter-spacing: 2px; font-size: 10px; font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">INICIANDO SISTEMA...</div>
+        <div style="width: 200px; height: 8px; background: #222; margin-bottom: 20px; border: 2px solid var(--neon-cyan); overflow: hidden;">
+            <div id="barra-loading"></div>
         </div>
-
+        <button id="btn-instalar" class="btn-principal">📲 ADICIONAR À TELA INICIAL</button>
     </div>
-
-
 
     <div id="tela-menu" class="tela">
-
-        <h2 style="margin-bottom: 20px; color: #0ff; font-size: 14px;">SELECIONE O MODULO</h2>
-
+        <h2 style="margin-bottom: 20px; color: var(--neon-cyan); font-size: 14px; font-family: 'Orbitron', sans-serif;">SELECIONE O MÓDULO</h2>
         <div class="container-jogos">
-
-            <div class="jogo-card" onclick="irParaLoading('snake')">🐍 NEON SNAKE</div>
-
-            <div class="jogo-card" onclick="irParaLoading('breakout')">🧱 CYBER BLOCKS</div>
-
-            <div class="jogo-card" onclick="irParaLoading('space')">🚀 GALAXY DEFENDER</div>
-
+            <div class="neon-card" onclick="iniciarJogo('snake')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <path d="M20 50 L35 50 L35 35 L50 35 L50 50 L65 50 L65 65 L80 65" stroke="#39ff14" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="80" cy="65" r="6" fill="#39ff14"/>
+                    </svg>
+                </div>
+                🐍 COBRINHA
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('breakout')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(157,0,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <rect x="10" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="30" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="50" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="70" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <circle cx="50" cy="60" r="5" fill="#00feff"/>
+                        <rect x="35" y="85" width="30" height="6" fill="#9d00ff" rx="3"/>
+                    </svg>
+                </div>
+                🧱 BLOCOS
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('space')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(0,254,255,0.2), rgba(0,153,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <path d="M20 40 L30 30 L40 40 L50 30 L60 40 L70 30 L80 40 L75 50 L25 50 Z" fill="#00feff"/>
+                        <circle cx="35" cy="42" r="3" fill="#0b1120"/>
+                        <circle cx="65" cy="42" r="3" fill="#0b1120"/>
+                        <path d="M45 70 L40 85 L50 80 L60 85 L55 70" fill="#9d00ff"/>
+                    </svg>
+                </div>
+                🚀 GALÁXIA
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('flap')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,0,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <ellipse cx="50" cy="50" rx="25" ry="20" fill="#ff6b00"/>
+                        <circle cx="60" cy="45" r="5" fill="#000"/>
+                        <path d="M30 50 L20 45 L20 55 Z" fill="#ff00ff"/>
+                    </svg>
+                </div>
+                🐦 NEON FLAP
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('hacker')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <rect x="25" y="25" width="50" height="50" rx="8" fill="#39ff14"/>
+                        <rect x="35" y="40" width="6" height="6" fill="#000"/>
+                        <rect x="59" y="40" width="6" height="6" fill="#000"/>
+                        <rect x="42" y="55" width="16" height="3" fill="#000"/>
+                        <rect x="47" y="58" width="6" height="8" fill="#f44"/>
+                    </svg>
+                </div>
+                🟩 BLOBBY
+            </div>
         </div>
-
     </div>
-
-
 
     <div id="tela-jogo" class="tela">
-
         <div class="header-jogo">
-
-            <button onclick="irParaMenuDireto()" style="background:none; border:none; color:#f44; font-family: 'Press Start 2P'; font-size: 10px;">SAIR</button>
-
+            <button onclick="irParaMenuDireto()" style="background:none; border:none; color:#f44; font-family: 'Orbitron'; font-size: 10px;">SAIR</button>
             <div style="text-align:center">
-
                 <div id="score-live">0</div>
-
                 <div id="record-live" style="color:#aaa;">RECORDE: 0</div>
-
             </div>
-
-            <button onclick="alternarPausa()" id="btn-pausa" style="background:none; border:none; color:#0ff; font-family: 'Press Start 2P'; font-size: 10px;">PAUSAR</button>
-
+            <button onclick="alternarPausa()" id="btn-pausa" style="background:none; border:none; color:var(--neon-cyan); font-family: 'Orbitron'; font-size: 10px;">PAUSAR</button>
         </div>
-
         <canvas id="canvas" width="400" height="550"></canvas>
-
         <div id="painel-gameover">
-
             <h2 id="titulo-gameover" style="color:#f44;">SISTEMA FALHOU</h2>
-
             <p id="score-final" style="margin:20px 0; color: white;"></p>
-
             <button class="btn-principal" onclick="reiniciarJogo()">REPETIR</button>
-
         </div>
-
     </div>
 
-
-
     <script>
-
         const canvas = document.getElementById('canvas'), ctx = canvas.getContext('2d');
-
         let jogoAtivo = "", pausado = false, pontos = 0, recorde = 0, particulas = [], animFrameId, timeoutId, gameOverAtivo = false;
-
         let tStartX = 0, tStartY = 0, mudouDirecaoNesteFrame = false, estrelas = [];
-
         let eventoInstalar = null;
 
-
-
-        // === PWA - ADICIONAR A TELA INICIAL ===
+        window.addEventListener('load', () => {
+            let progresso = 0;
+            const barra = document.getElementById('barra-loading');
+            const interval = setInterval(() => {
+                progresso += 2;
+                barra.style.width = progresso + '%';
+                if (progresso >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('tela-inicial').classList.remove('ativa');
+                        document.getElementById('tela-menu').classList.add('ativa');
+                    }, 300);
+                }
+            }, 30);
+        });
 
         window.addEventListener('beforeinstallprompt', (e) => {
-
             e.preventDefault();
-
             eventoInstalar = e;
-
             document.getElementById('btn-instalar').style.display = 'block';
-
         });
-
-
 
         document.getElementById('btn-instalar').addEventListener('click', async () => {
-
             if (!eventoInstalar) return;
-
             eventoInstalar.prompt();
-
             await eventoInstalar.userChoice;
-
             eventoInstalar = null;
-
             document.getElementById('btn-instalar').style.display = 'none';
-
         });
 
-
-
         function setNeon(color, blur = 10) { ctx.shadowBlur = blur; ctx.shadowColor = color; ctx.fillStyle = color; ctx.strokeStyle = color; }
-
         function resetNeon() { ctx.shadowBlur = 0; }
 
-
-
         let audioCtx;
-
         function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
-
         function bip(f, t, d, v=0.05) { if(!audioCtx) return; try { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime); g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); } catch(e){} }
 
-
-
         function criarExplosao(x, y, cor) { for(let i=0; i<20; i++) particulas.push({ x, y, vx:(Math.random()-0.5)*15, vy:(Math.random()-0.5)*15, vida:1, cor, g: 0.15, size: 2 + Math.random()*3 }); }
-
         function desenharParticulas() { particulas.forEach((p, i) => { p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.vida-=0.02; if(p.vida<=0) particulas.splice(i,1); else { setNeon(`rgba(${p.cor},${p.vida})`, 5); ctx.fillRect(p.x,p.y,p.size||3,p.size||3); resetNeon(); } }); }
+        function moverEstrelas() { ctx.fillStyle = "rgba(255,255,255,0.3)"; estrelas.forEach(est => { ctx.beginPath(); ctx.arc(est.x, est.y, est.s, 0, Math.PI*2); ctx.fill(); if(jogoAtivo === 'space' || jogoAtivo === 'hacker') { est.y += est.s * 2; if(est.y > 550) est.y = 0; } }); }
 
-        function moverEstrelas() { ctx.fillStyle = "rgba(255,255,255,0.3)"; estrelas.forEach(est => { ctx.beginPath(); ctx.arc(est.x, est.y, est.s, 0, Math.PI*2); ctx.fill(); if(jogoAtivo === 'space') { est.y += est.s * 2; if(est.y > 550) est.y = 0; } }); }
-
-
-
-        // --- SNAKE ---
-
+        // --- COBRINHA CORRIGIDA ---
         let snk, mc, sDx, sDy, sV;
-
         function iniciarSnake() {
-
             cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
-
             jogoAtivo='snake'; pontos=0; sDx=1; sDy=0; sV=150; snk=[{x:10,y:10},{x:9,y:10}]; mc={x:15,y:15};
-
             gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
-
             carregarRecorde(); loopSnake();
-
         }
-
         function desenharRostoCobra(x, y) {
-
             setNeon("#0ff", 15);
-
             ctx.fillRect(x*20+1, y*20+1, 18, 18);
-
-            ctx.fillStyle = "#000"; let oX = sDx!== 0? (sDx > 0? 12 : 4) : 4; let oY = sDy!== 0? (sDy > 0? 12 : 4) : 4;
-
-            ctx.fillRect(x*20+oX, y*20+oY, 4, 4); if(sDx!== 0) ctx.fillRect(x*20+oX, y*20+(oY === 4? 12 : 4), 4, 4); else ctx.fillRect(x*20+(oX === 4? 12 : 4), y*20+oY, 4, 4);
-
-            if(Math.floor(Date.now()/300) % 2 === 0) { ctx.fillStyle = "#f44"; let lX = x*20+10, lY = y*20+10; if(sDx > 0) ctx.fillRect(lX+10, lY-2, 6, 4); else if(sDx < 0) ctx.fillRect(lX-16, lY-2, 6, 4); else if(sDy > 0) ctx.fillRect(lX-2, lY+10, 4, 6); else if(sDy < 0) ctx.fillRect(lX-2, lY-16, 4, 6); }
-
+            ctx.fillStyle = "#000";
+            let oX = sDx!== 0? (sDx > 0? 12 : 4) : 4;
+            let oY = sDy!== 0? (sDy > 0? 12 : 4) : 4;
+            ctx.fillRect(x*20+oX, y*20+oY, 4, 4);
+            if(sDx!== 0) ctx.fillRect(x*20+oX, y*20+(oY === 4? 12 : 4), 4, 4);
+            else ctx.fillRect(x*20+(oX === 4? 12 : 4), y*20+oY, 4, 4);
+            if(Math.floor(Date.now()/300) % 2 === 0) {
+                ctx.fillStyle = "#f44";
+                let lX = x*20+10, lY = y*20+10;
+                if(sDx > 0) ctx.fillRect(lX+10, lY-2, 6, 4);
+                else if(sDx < 0) ctx.fillRect(lX-16, lY-2, 6, 4);
+                else if(sDy > 0) ctx.fillRect(lX-2, lY+10, 4, 6);
+                else if(sDy < 0) ctx.fillRect(lX-2, lY-16, 4, 6);
+            }
             resetNeon();
-
         }
-
         function loopSnake() {
-
             if(pausado || jogoAtivo!== 'snake' || gameOverAtivo) return;
-
             mudouDirecaoNesteFrame = false; ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
-
             setNeon("#f44", 15); ctx.beginPath(); ctx.arc(mc.x*20+10, mc.y*20+10, 8, 0, Math.PI*2); ctx.fill(); resetNeon();
-
             snk.forEach((p, i) => { if(i===0) desenharRostoCobra(p.x, p.y); else { setNeon("#0aa", 5); ctx.fillRect(p.x*20+2, p.y*20+2, 16, 16); resetNeon(); } });
-
             let h={x:snk[0].x+sDx, y:snk[0].y+sDy};
-
             if(h.x<0||h.x>=20||h.y<0||h.y>=27||snk.some(s=>s.x===h.x&&s.y===h.y)){ gameOver(); return; }
-
             snk.unshift(h); if(h.x===mc.x&&h.y===mc.y){ pontos+=10; criarExplosao(h.x*20+10,h.y*20+10,"255,68,68"); mc={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*25)}; bip(440,'sine',0.1); if(sV > 70) sV -= 2; } else snk.pop();
-
             document.getElementById('score-live').textContent=pontos; timeoutId=setTimeout(loopSnake,sV);
-
-        }
-
-
-
-        // --- BREAKOUT ---
-
-        let padX, bX, bY, bDX, bDY, brks=[], lBk=1;
-
+        }        // --- BLOCOS COM FASES ---
+        let padX, bX, bY, bDX, bDY, brks=[], lBk=1, faseBreakout=1;
         function iniciarBreakout(reset) {
-
-            cancelAnimationFrame(animFrameId); if(reset){pontos=0; lBk=1;}
-
-            jogoAtivo='breakout'; padX=155; bX=200; bY=400; bDX=4; bDY=-4;
-
+            cancelAnimationFrame(animFrameId);
+            if(reset){pontos=0; lBk=1; faseBreakout=1;}
+            jogoAtivo='breakout'; padX=155; bX=200; bY=400;
+            bDX=3 + faseBreakout*0.5;
+            bDY=-(3 + faseBreakout*0.5);
             gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
-
-            carregarRecorde(); brks=[]; for(let c=0; c<5; c++){ brks[c]=[]; for(let r=0; r<6; r++){ let a = (Math.random() > 0.3)? 1 : 0; brks[c][r]={s:a, c:`hsl(${(r*40) + (lBk*30)},100%,60%)`}; }} loopBreakout();
-
+            document.getElementById('titulo-gameover').textContent = "BLOCOS - FASE " + faseBreakout;
+            carregarRecorde();
+            brks=[];
+            let linhas = 4 + Math.min(faseBreakout, 4);
+            for(let c=0; c<5; c++){
+                brks[c]=[];
+                for(let r=0; r<linhas; r++){
+                    let a = (Math.random() > 0.2)? 1 : 0;
+                    let vida = faseBreakout > 3? (Math.random() > 0.7? 2 : 1) : 1;
+                    brks[c][r]={s:a, vida:vida, c:`hsl(${(r*40) + (lBk*30)},100%,60%)`};
+                }
+            }
+            loopBreakout();
         }
 
         function loopBreakout() {
-
-            if(pausado || jogoAtivo!=='breakout' || gameOverAtivo) return; ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
-
-            for(let c=0; c<5; c++){ for(let r=0; r<6; r++){ let b=brks[c][r]; if(b.s){ let bx=c*78+10, by=r*25+80; setNeon(b.c, 10); ctx.fillRect(bx,by,70,20); resetNeon(); if(bX>bx && bX<bx+70 && bY>by && bY<by+20){ bDY*=-1; b.s=0; pontos+=15; criarExplosao(bx+35,by+10,"0,255,255"); bip(600,'square',0.05); } } }}
-
-            if(!brks.flat().some(b=>b.s)){ lBk++; iniciarBreakout(false); return; }
-
-            setNeon("#fff", 15); ctx.beginPath(); ctx.arc(bX,bY,8,0,Math.PI*2); ctx.fill(); resetNeon(); setNeon("#0ff", 20); ctx.fillRect(padX,520,90,12); resetNeon(); bX+=bDX; bY+=bDY; if(bX<8||bX>392) bDX*=-1; if(bY<10) bDY*=-1; if(bY>515 && bY<535 && bX>padX && bX<padX+90){ bY=515; bDY=-Math.abs(bDY); bip(300,'sine',0.05); } if(bY>550){ gameOver(); return; }
-
-            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBreakout);
-
-        }
-
-
-
-        // --- SPACE ---
-
-        let nX, ts=[], ins=[], fI=0, caixas=[], powerUp=0;
-
-        function iniciarSpace() {
-
-            cancelAnimationFrame(animFrameId); jogoAtivo='space'; pontos=0; nX=175; ts=[]; ins=[]; caixas=[]; fI=0; powerUp=0;
-
-            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
-
-            document.getElementById('titulo-gameover').textContent = "SISTEMA FALHOU";
-
-            carregarRecorde(); loopSpace();
-
-        }
-
-        function desenharNaveStilosa(x, y, p) {
-
-            const power = p > 0;
-
-            if(power) { setNeon("#f0f", 25 + Math.sin(fI*0.3)*10); } else { setNeon("#f44", 20); }
-
-            ctx.fillRect(x+20, y, 10, 10);
-
-            ctx.fillRect(x+15, y+10, 20, 10);
-
-            ctx.fillRect(x+10, y+20, 30, 15);
-
-            ctx.fillRect(x, y+35, 50, 10);
-
-            setNeon("#0ff", 10);
-
-            ctx.fillRect(x+22, y+15, 6, 6);
-
-            if(Math.floor(fI/4) % 2 === 0) {
-
-                setNeon("#ff0", 15);
-
-                ctx.fillRect(x+20, y+45, 10, 12);
-
-                setNeon("#f80", 10);
-
-                ctx.fillRect(x+22, y+50, 6, 8);
-
-            }
-
-            resetNeon();
-
-        }
-
-        function desenharMeteoro(inv) {
-
-            ctx.save();
-
-            ctx.translate(inv.x+17, inv.y+17);
-
-            ctx.rotate(inv.rot);
-
-            inv.rot += inv.rotV;
-
-            setNeon("#888", 15);
-
-            ctx.beginPath();
-
-            ctx.moveTo(0, -20); ctx.lineTo(14, -14); ctx.lineTo(20, 0); ctx.lineTo(14, 14);
-
-            ctx.lineTo(0, 20); ctx.lineTo(-14, 14); ctx.lineTo(-20, 0); ctx.lineTo(-14, -14);
-
-            ctx.closePath(); ctx.fill();
-
-            setNeon("#444", 5);
-
-            ctx.beginPath(); ctx.arc(-6, -4, 3, 0, Math.PI*2); ctx.fill();
-
-            ctx.beginPath(); ctx.arc(4, 6, 4, 0, Math.PI*2); ctx.fill();
-
-            resetNeon();
-
-            ctx.restore();
-
-        }
-
-        function desenharBonusBateria(x, y) {
-
-            if(Math.floor(fI/8) % 2 === 0) {
-
-                setNeon("#f0f", 25);
-
-                ctx.strokeStyle = "#f0f"; ctx.lineWidth = 2;
-
-                ctx.strokeRect(x-4, y-4, 28, 38);
-
-            }
-
-            setNeon("#f0f", 20);
-
-            ctx.beginPath();
-
-            ctx.moveTo(x+10, y); ctx.lineTo(x+20, y+10); ctx.lineTo(x+15, y+30);
-
-            ctx.lineTo(x+5, y+30); ctx.lineTo(x, y+10); ctx.closePath(); ctx.fill();
-
-            setNeon("#fff", 10);
-
-            ctx.fillRect(x+8, y+8, 4, 8);
-
-            resetNeon();
-
-        }
-
-        function loopSpace() {
-
-            if(pausado||jogoAtivo!=='space'||gameOverAtivo) return;
-
+            if(pausado || jogoAtivo!=='breakout' || gameOverAtivo) return;
             ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
 
+            setNeon("#ff00ff", 15);
+            ctx.font = "14px Orbitron";
+            ctx.textAlign = "center";
+            ctx.fillText("FASE " + faseBreakout, 200, 40);
+            resetNeon();
+
+            for(let c=0; c<5; c++){
+                for(let r=0; r<brks[c].length; r++){
+                    let b=brks[c][r];
+                    if(b.s > 0){
+                        let bx=c*78+10, by=r*25+80;
+                        setNeon(b.vida > 1? "#fff" : b.c, b.vida > 1? 20 : 10);
+                        ctx.fillRect(bx,by,70,20);
+                        resetNeon();
+                        if(bX>bx && bX<bx+70 && bY>by && bY<by+20){
+                            bDY*=-1;
+                            b.vida--;
+                            if(b.vida <= 0) {
+                                b.s=0;
+                                pontos+=15;
+                                criarExplosao(bx+35,by+10,"255,0,255");
+                            } else {
+                                criarExplosao(bx+35,by+10,"255,255,255");
+                            }
+                            bip(600,'square',0.05);
+                        }
+                    }
+                }
+            }
+
+            if(!brks.flat().some(b=>b.s > 0)){
+                faseBreakout++;
+                lBk++;
+                ctx.save();
+                setNeon("#00feff", 30);
+                ctx.font = "32px Orbitron";
+                ctx.textAlign = "center";
+                ctx.fillText("FASE " + faseBreakout, 200, 275);
+                resetNeon();
+                ctx.restore();
+                bip(800, 'sine', 0.3);
+                setTimeout(() => iniciarBreakout(false), 1500);
+                return;
+            }
+
+            setNeon("#fff", 15); ctx.beginPath(); ctx.arc(bX,bY,8,0,Math.PI*2); ctx.fill(); resetNeon();
+            setNeon("#0ff", 20); ctx.fillRect(padX,520,90,12); resetNeon();
+            bX+=bDX; bY+=bDY;
+            if(bX<8||bX>392) bDX*=-1;
+            if(bY<10) bDY*=-1;
+            if(bY>515 && bY<535 && bX>padX && bX<padX+90){ bY=515; bDY=-Math.abs(bDY); bip(300,'sine',0.05); }
+            if(bY>550){ gameOver(); return; }
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBreakout);
+        }
+
+        // --- GALÁXIA ---
+        let nX, ts=[], ins=[], fI=0, caixas=[], powerUp=0;
+        function iniciarSpace() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='space'; pontos=0; nX=175; ts=[]; ins=[]; caixas=[]; fI=0; powerUp=0;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "SISTEMA FALHOU";
+            carregarRecorde(); loopSpace();
+        }
+        function desenharNaveStilosa(x, y, p) {
+            const power = p > 0;
+            if(power) { setNeon("#f0f", 25 + Math.sin(fI*0.3)*10); } else { setNeon("#f44", 20); }
+            ctx.fillRect(x+20, y, 10, 10);
+            ctx.fillRect(x+15, y+10, 20, 10);
+            ctx.fillRect(x+10, y+20, 30, 15);
+            ctx.fillRect(x, y+35, 50, 10);
+            setNeon("#0ff", 10);
+            ctx.fillRect(x+22, y+15, 6, 6);
+            if(Math.floor(fI/4) % 2 === 0) {
+                setNeon("#ff0", 15);
+                ctx.fillRect(x+20, y+45, 10, 12);
+                setNeon("#f80", 10);
+                ctx.fillRect(x+22, y+50, 6, 8);
+            }
+            resetNeon();
+        }
+        function desenharMeteoro(inv) {
+            ctx.save();
+            ctx.translate(inv.x+17, inv.y+17);
+            ctx.rotate(inv.rot);
+            inv.rot += inv.rotV;
+            setNeon("rgba(255,107,0,0.7)", 15);
+            ctx.beginPath();
+            ctx.moveTo(0, -20); ctx.lineTo(14, -14); ctx.lineTo(20, 0); ctx.lineTo(14, 14);
+            ctx.lineTo(0, 20); ctx.lineTo(-14, 14); ctx.lineTo(-20, 0); ctx.lineTo(-14, -14);
+            ctx.closePath(); ctx.fill();
+            setNeon("#444", 5);
+            ctx.beginPath(); ctx.arc(-6, -4, 3, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(4, 6, 4, 0, Math.PI*2); ctx.fill();
+            resetNeon();
+            ctx.restore();
+        }
+        function desenharBonusBateria(x, y) {
+            if(Math.floor(fI/8) % 2 === 0) {
+                setNeon("#f0f", 25);
+                ctx.strokeStyle = "#f0f"; ctx.lineWidth = 2;
+                ctx.strokeRect(x-4, y-4, 28, 38);
+            }
+            setNeon("#f0f", 20);
+            ctx.beginPath();
+            ctx.moveTo(x+10, y); ctx.lineTo(x+20, y+10); ctx.lineTo(x+15, y+30);
+            ctx.lineTo(x+5, y+30); ctx.lineTo(x, y+10); ctx.closePath(); ctx.fill();
+            setNeon("#fff", 10);
+            ctx.fillRect(x+8, y+8, 4, 8);
+            resetNeon();
+        }
+        function loopSpace() {
+            if(pausado||jogoAtivo!=='space'||gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
             desenharNaveStilosa(nX, 480, powerUp);
-
             let cad=powerUp>0?6:18;
-
             if(fI%cad===0){ ts.push({x:nX+22,y:470}); bip(800,'sine',0.02,0.01); }
-
             if(powerUp>0) powerUp--;
-
             ts.forEach((t,i)=>{ t.y-=12; setNeon("#fff", 10); ctx.fillRect(t.x,t.y,6,15); resetNeon(); if(t.y<0) ts.splice(i,1); });
-
             if(fI%45===0) ins.push({ x:Math.random()*360, y:-40, v:3+(pontos/1500), rot: Math.random()*Math.PI*2, rotV: (Math.random()-0.5)*0.05 });
-
             ins.forEach((inv,i)=>{
-
                 inv.y+=inv.v; desenharMeteoro(inv);
-
                 if(inv.y > 540) { document.getElementById('titulo-gameover').textContent = "DEFESA FALHOU"; gameOver(); return; }
-
-                ts.forEach((t,ti)=>{ if(t.x>inv.x&&t.x<inv.x+35&&t.y>inv.y&&t.y<inv.y+35){ ins.splice(i,1); ts.splice(ti,1); pontos+=20; criarExplosao(inv.x+17,inv.y+17,"255,0,255"); bip(200,'sawtooth',0.05); } });
-
+                ts.forEach((t,ti)=>{ if(t.x>inv.x&&t.x<inv.x+35&&t.y>inv.y&&t.y<inv.y+35){ ins.splice(i,1); ts.splice(ti,1); pontos+=20; criarExplosao(inv.x+17,inv.y+17,"255,107,0"); bip(200,'sawtooth',0.05); } });
                 if(inv.y>460 && inv.y<520 && inv.x>nX-10 && inv.x<nX+50){ document.getElementById('titulo-gameover').textContent = "SISTEMA FALHOU"; gameOver(); return; }
+            });
+            if(fI%400===0) caixas.push({x:Math.random()*360,y:-40});
+            caixas.forEach((c,i)=>{ c.y+=2.5; desenharBonusBateria(c.x, c.y); if(c.y>470 && c.y<520 && c.x>nX-5 && c.x<nX+55){ powerUp=200; caixas.splice(i,1); bip(1200,'sine',0.2); } });
+            fI++; document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopSpace);
+        }
 
+        // --- NEON FLAP ---
+        let flapY, flapVel, flapGrav, flapCanos, flapFrame, flapScore;
+        function iniciarFlap() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='flap'; pontos=0; flapY=250; flapVel=0; flapGrav=0.5; flapCanos=[]; flapFrame=0; flapScore=0;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "VOO FALHOU";
+            carregarRecorde();
+            for(let i=0; i<3; i++) { flapCanos.push({x: 400 + i*200, gap: 150 + Math.random()*100}); }
+            loopFlap();
+        }
+        function loopFlap() {
+            if(pausado || jogoAtivo!=='flap' || gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+
+            flapCanos.forEach((cano, i) => {
+                cano.x -= 3;
+                setNeon("#0ff", 10);
+                ctx.fillRect(cano.x, 0, 50, cano.gap - 80);
+                ctx.fillRect(cano.x, cano.gap + 80, 50, 550 - cano.gap - 80);
+                resetNeon();
+
+                if(cano.x < -50) {
+                    cano.x = 400;
+                    cano.gap = 150 + Math.random()*100;
+                    pontos += 10;
+                }
+
+                if(50 < cano.x + 50 && 70 > cano.x && (flapY < cano.gap - 80 || flapY + 20 > cano.gap + 80)) {
+                    gameOver(); return;
+                }
             });
 
-            if(fI%400===0) caixas.push({x:Math.random()*360,y:-40});
+            flapVel += flapGrav;
+            flapY += flapVel;
 
-            caixas.forEach((c,i)=>{ c.y+=2.5; desenharBonusBateria(c.x, c.y); if(c.y>470 && c.y<520 && c.x>nX-5 && c.x<nX+55){ powerUp=200; caixas.splice(i,1); bip(1200,'sine',0.2); } });
+            setNeon("#ff6b00", 15);
+            ctx.beginPath();
+            ctx.ellipse(60, flapY, 15, 12, 0, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#000", 5);
+            ctx.beginPath();
+            ctx.arc(65, flapY-2, 3, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#ff00ff", 10);
+            ctx.beginPath();
+            ctx.moveTo(45, flapY); ctx.lineTo(35, flapY-5); ctx.lineTo(35, flapY+5); ctx.closePath(); ctx.fill();
+            resetNeon();
 
-            fI++; document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopSpace);
+            if(flapY > 530 || flapY < 0) { gameOver(); return; }
 
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopFlap);
         }
 
+        // --- NEON BLOBBY CORRIGIDO ---
+        let blobbyX, blobbyY, blobbyVelY, blobbyGrav, blobbyObst, blobbyFrame, blobbyChao, blobbyPulando;
+        function iniciarHacker() {
+            cancelAnimationFrame(animFrameId); jogoAtivo='hacker'; pontos=0;
+            blobbyX=80; blobbyY=400; blobbyVelY=0; blobbyGrav=0.8; blobbyObst=[]; blobbyFrame=0; blobbyChao=450; blobbyPulando=false;
+            gameOverAtivo = false; pausado = false; document.getElementById('painel-gameover').style.display='none';
+            document.getElementById('titulo-gameover').textContent = "BLOBBY FALHOU";
+            carregarRecorde();
+            for(let i=0; i<2; i++) {
+                blobbyObst.push({
+                    x: 600 + i*450,
+                    tipo: Math.floor(Math.random()*3),
+                    h: 35 + Math.random()*25
+                });
+            }
+            loopBlobby();
+        }
 
+        function desenharBlobby(x, y) {
+            setNeon("#39ff14", 20);
+            ctx.fillRect(x, y, 30, 30);
+
+            ctx.fillStyle = "#000";
+            ctx.fillRect(x+6, y+8, 4, 4);
+            ctx.fillRect(x+20, y+8, 4, 4);
+            ctx.fillRect(x+10, y+18, 10, 2);
+
+            if(blobbyPulando) {
+                setNeon("#f44", 10);
+                ctx.fillRect(x+13, y+20, 4, 8);
+            }
+
+            if(!blobbyPulando && Math.floor(blobbyFrame/3) % 2 === 0) {
+                setNeon("rgba(57,255,20,0.5)", 5);
+                ctx.fillRect(x-10, y+10, 8, 8);
+                ctx.fillRect(x-18, y+15, 6, 6);
+            }
+            resetNeon();
+        }
+
+        function desenharFirewall(obs) {
+            setNeon("#f44", 15);
+            ctx.fillRect(obs.x, blobbyChao - obs.h, 30, obs.h);
+            setNeon("#ff6b00", 10);
+            for(let i=0; i<obs.h; i+=10) {
+                ctx.fillRect(obs.x+5, blobbyChao - obs.h + i, 20, 2);
+            }
+            setNeon("#fff", 15);
+            ctx.font = "20px Orbitron";
+            ctx.fillText("X", obs.x+8, blobbyChao - obs.h/2 + 7);
+            resetNeon();
+        }
+
+        function desenharBug(obs) {
+            setNeon("#9d00ff", 15);
+            ctx.beginPath();
+            ctx.arc(obs.x+15, blobbyChao - obs.h/2, obs.h/2, 0, Math.PI*2);
+            ctx.fill();
+            setNeon("#000", 10);
+            ctx.fillRect(obs.x+10, blobbyChao - obs.h/2 - 5, 10, 10);
+            resetNeon();
+        }
+
+        function desenharLaser(obs) {
+            setNeon("#ff00ff", 20);
+            ctx.fillRect(obs.x, blobbyChao - obs.h, 5, obs.h);
+            setNeon("#fff", 15);
+            ctx.fillRect(obs.x+2, blobbyChao - obs.h, 1, obs.h);
+            resetNeon();
+        }
+
+        function loopBlobby() {
+            if(pausado || jogoAtivo!=='hacker' || gameOverAtivo) return;
+            ctx.clearRect(0,0,400,550); moverEstrelas(); desenharParticulas();
+
+            setNeon("#0ff", 10);
+            ctx.fillRect(0, blobbyChao, 400, 100);
+            resetNeon();
+
+            blobbyVelY += blobbyGrav;
+            blobbyY += blobbyVelY;
+
+            if(blobbyY > blobbyChao - 30) {
+                blobbyY = blobbyChao - 30;
+                blobbyVelY = 0;
+                blobbyPulando = false;
+            }
+
+            desenharBlobby(blobbyX, blobbyY);
+
+            let velocidade = 4 + pontos/800;
+
+            blobbyObst.forEach((obs, i) => {
+                obs.x -= velocidade;
+
+                if(obs.tipo === 0) desenharFirewall(obs);
+                else if(obs.tipo === 1) desenharBug(obs);
+                else desenharLaser(obs);
+
+                if(obs.x < -50) {
+                    let ultimoX = Math.max(...blobbyObst.map(o => o.x));
+                    obs.x = ultimoX + 400 + Math.random()*150;
+                    obs.tipo = Math.floor(Math.random()*3);
+                    obs.h = 35 + Math.random()*25;
+                    pontos += 10;
+                }
+
+                if(blobbyX + 22 > obs.x && blobbyX + 8 < obs.x + 30 && blobbyY + 30 > blobbyChao - obs.h) {
+                    gameOver(); return;
+                }
+            });
+
+            blobbyFrame++;
+            document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBlobby);
+        }
 
         // --- SISTEMA ---
-
         function gameOver() {
-
             gameOverAtivo = true; cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
-
             salvarRecorde(); bip(100, 'sawtooth', 0.5, 0.1);
-
             document.getElementById('score-final').textContent = "PONTOS: " + pontos;
-
             document.getElementById('painel-gameover').style.display = 'block';
-
         }
-
         function reiniciarJogo() {
-
             gameOverAtivo = false; pausado = false; particulas = [];
-
             document.getElementById('painel-gameover').style.display = 'none';
-
             if(jogoAtivo === 'snake') iniciarSnake();
-
             else if(jogoAtivo === 'breakout') iniciarBreakout(true);
-
             else if(jogoAtivo === 'space') iniciarSpace();
-
+            else if(jogoAtivo === 'flap') iniciarFlap();
+            else if(jogoAtivo === 'hacker') iniciarHacker();
         }
-
         function salvarRecorde() { if(pontos > recorde) { recorde = pontos; localStorage.setItem("recorde_" + jogoAtivo, recorde); document.getElementById('record-live').textContent = "RECORDE: " + recorde; } }
-
         function carregarRecorde() { recorde = localStorage.getItem("recorde_" + jogoAtivo) || 0; document.getElementById('record-live').textContent = "RECORDE: " + recorde; }
-
         function irParaMenuDireto() { cancelAnimationFrame(animFrameId); clearTimeout(timeoutId); jogoAtivo = ""; document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById('tela-menu').classList.add('ativa'); document.getElementById('painel-gameover').style.display = 'none'; }
-
-        function irParaLoading(dest) {
-
+        function iniciarJogo(jogo) {
             initAudio(); if(estrelas.length===0) { for(let i=0; i<50; i++) estrelas.push({x: Math.random()*400, y: Math.random()*550, s: Math.random()*2}); }
-
             cancelAnimationFrame(animFrameId); clearTimeout(timeoutId);
-
-            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById('tela-loading').classList.add('ativa');
-
-            let p = 0; const barra = document.getElementById('barra'); const intv = setInterval(() => { p += 10; barra.style.width = p + '%'; if(p >= 100) { clearInterval(intv); document.getElementById('tela-loading').classList.remove('ativa'); if(dest === 'menu') document.getElementById('tela-menu').classList.add('ativa'); else { document.getElementById('tela-jogo').classList.add('ativa'); if(dest==='snake') iniciarSnake(); else if(dest==='breakout') iniciarBreakout(true); else iniciarSpace(); } } }, 30);
-
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.getElementById('tela-jogo').classList.add('ativa');
+            if(jogo==='snake') iniciarSnake();
+            else if(jogo==='breakout') iniciarBreakout(true);
+            else if(jogo==='space') iniciarSpace();
+            else if(jogo==='flap') iniciarFlap();
+            else if(jogo==='hacker') iniciarHacker();
         }
+        function alternarPausa() { if(gameOverAtivo) return; pausado =!pausado; document.getElementById('btn-pausa').textContent = pausado? "VOLTAR" : "PAUSAR"; if(!pausado) { if(jogoAtivo==='snake') loopSnake(); else if(jogoAtivo==='breakout') loopBreakout(); else if(jogoAtivo==='space') loopSpace(); else if(jogoAtivo==='flap') loopFlap(); else if(jogoAtivo==='hacker') loopBlobby(); } }
 
-        function alternarPausa() { if(gameOverAtivo) return; pausado =!pausado; document.getElementById('btn-pausa').textContent = pausado? "VOLTAR" : "PAUSAR"; if(!pausado) { if(jogoAtivo==='snake') loopSnake(); else if(jogoAtivo==='breakout') loopBreakout(); else loopSpace(); } }
+        // --- CONTROLES TOUCH ---
+        canvas.addEventListener('touchstart', e => {
+            tStartX = e.touches[0].clientX;
+            tStartY = e.touches[0].clientY;
+            initAudio();
 
-        canvas.addEventListener('touchstart', e => { tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY; initAudio(); }, {passive: true});
+            if(jogoAtivo==='flap' &&!pausado &&!gameOverAtivo) {
+                flapVel = -10;
+                bip(600, 'sine', 0.05);
+            }
+            if(jogoAtivo==='hacker' &&!pausado &&!gameOverAtivo && blobbyY >= blobbyChao - 31) {
+                blobbyVelY = -15;
+                blobbyPulando = true;
+                bip(400, 'square', 0.1);
+            }
+        }, {passive: true});
 
-        canvas.addEventListener('touchmove', e => { if(pausado || gameOverAtivo) return; e.preventDefault(); const rect = canvas.getBoundingClientRect(); const relX = (e.touches[0].clientX - rect.left) * (400 / rect.width); if(jogoAtivo==='snake'){ if(mudouDirecaoNesteFrame) return; const dx = e.touches[0].clientX - tStartX, dy = e.touches[0].clientY - tStartY; if(Math.abs(dx) > 30 || Math.abs(dy) > 30){ if(Math.abs(dx) > Math.abs(dy)){ let nX = dx > 0? 1 : -1; if(nX!== -sDx) { sDx = nX; sDy = 0; mudouDirecaoNesteFrame = true; } } else { let nY = dy > 0? 1 : -1; if(nY!== -sDy) { sDy = nY; sDx = 0; mudouDirecaoNesteFrame = true; } } tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY; } } else if(jogoAtivo==='breakout') padX = Math.max(0, Math.min(310, relX - 45)); else if(jogoAtivo==='space') nX = Math.max(0, Math.min(350, relX - 25)); }, {passive: false});
+        canvas.addEventListener('touchmove', e => {
+            if(pausado || gameOverAtivo) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const relX = (e.touches[0].clientX - rect.left) * (400 / rect.width);
 
+            if(jogoAtivo==='snake'){
+                if(mudouDirecaoNesteFrame) return;
+                const dx = e.touches[0].clientX - tStartX, dy = e.touches[0].clientY - tStartY;
+                if(Math.abs(dx) > 30 || Math.abs(dy) > 30){
+                    if(Math.abs(dx) > Math.abs(dy)){
+                        let nX = dx > 0? 1 : -1;
+                        if(nX!== -sDx) { sDx = nX; sDy = 0; mudouDirecaoNesteFrame = true; }
+                    } else {
+                        let nY = dy > 0? 1 : -1;
+                        if(nY!== -sDy) { sDy = nY; sDx = 0; mudouDirecaoNesteFrame = true; }
+                    }
+                    tStartX = e.touches[0].clientX; tStartY = e.touches[0].clientY;
+                }
+            } else if(jogoAtivo==='breakout') {
+                padX = Math.max(0, Math.min(310, relX - 45));
+            } else if(jogoAtivo==='space') {
+                nX = Math.max(0, Math.min(350, relX - 25));
+            }
+        }, {passive: false});
+
+        document.addEventListener('keydown', (e) => {
+            if(gameOverAtivo || pausado) return;
+
+            if(jogoAtivo==='flap' && (e.key === ' ' || e.key === 'ArrowUp')) {
+                e.preventDefault();
+                flapVel = -10;
+                bip(600, 'sine', 0.05);
+            }
+            if(jogoAtivo==='hacker' && (e.key === ' ' || e.key === 'ArrowUp') && blobbyY >= blobbyChao - 31) {
+                e.preventDefault();
+                blobbyVelY = -15;
+                blobbyPulando = true;
+                bip(400, 'square', 0.1);
+            }
+            if(jogoAtivo==='snake') {
+                if ((e.key === 'ArrowUp' || e.key === 'w') && sDy === 0) { sDx = 0; sDy = -1; }
+                else if ((e.key === 'ArrowDown' || e.key === 's') && sDy === 0) { sDx = 0; sDy = 1; }
+                else if ((e.key === 'ArrowLeft' || e.key === 'a') && sDx === 0) { sDx = -1; sDy = 0; }
+                else if ((e.key === 'ArrowRight' || e.key === 'd') && sDx === 0) { sDx = 1; sDy = 0; }
+            }
+        });
+
+        document.body.addEventListener('touchmove', (e) => {
+            if (jogoAtivo) e.preventDefault();
+        }, { passive: false });
     </script>
-
 </body>
-
     </html>
