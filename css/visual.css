@@ -48,7 +48,7 @@ body {
     position: absolute; top: 0; width: 100%; display: flex;
     justify-content: space-between; align-items: center;
     padding: 10px 15px; font-family: 'Orbitron'; font-size: 11px;
-    background: rgba(0,0,0,0.7); z-index: 10;
+    background: rgba(0,0,0.7); z-index: 10;
 }
 .header-jogo button {
     background: none; border: 1px solid; padding: 6px 12px;
@@ -65,6 +65,4 @@ body {
 }
 .btn-principal {
     background: var(--neon-cyan); color: #000; border: none;
-    padding: 12px 25px; font-family: 'Orbitron'; font-size: 12px;
-    cursor: pointer; margin-top: 15px;
-}
+    padding: 12px
