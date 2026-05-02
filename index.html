@@ -2,167 +2,114 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Arcade OS - TESTE</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #0b1120; 
-            color: #00feff; 
-            font-family: Arial, sans-serif; 
-            overflow: hidden;
-        }
-       .tela { 
-            display: none; 
-            width: 100vw; 
-            height: 100vh; 
-            position: fixed; 
-            top: 0; 
-            left: 0;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-       .tela.ativa { display: flex; }
-       .btn { 
-            background: #00feff; 
-            color: #000; 
-            border: none; 
-            padding: 15px 30px; 
-            font-size: 16px; 
-            margin: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-       .btn:hover { background: #39ff14; }
-        #canvas { 
-            border: 2px solid #00feff; 
-            background: #000;
-        }
-       .header {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-       .header button {
-            background: none;
-            border: 1px solid #f44;
-            color: #f44;
-            padding: 5px 10px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Arcade OS - v11.0</title>
+
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icone-192.png">
+    <link rel="icon" type="image/png" href="./icone-192.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/visual.css?v=3">
 </head>
 <body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
     <div id="tela-inicial" class="tela ativa">
-        <h1 style="font-size: 32px; margin-bottom: 20px;">NEON ARCADE</h1>
-        <div>INICIANDO SISTEMA...</div>
-        <div id="loading" style="width: 200px; height: 10px; background: #222; margin: 20px;">
-            <div id="barra" style="width: 0%; height: 100%; background: #00feff; transition: width 1s;"></div>
+        <h1 class="logo-arcade">NEON ARCADE</h1>
+        <div style="color: var(--neon-cyan); letter-spacing: 2px; font-size: 10px; font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">INICIANDO SISTEMA...</div>
+        <div style="width: 200px; height: 8px; background: #222; margin-bottom: 20px; border: 2px solid var(--neon-cyan); overflow: hidden;">
+            <div id="barra-loading"></div>
         </div>
+        <button id="btn-instalar" class="btn-principal">📲 ADICIONAR À TELA INICIAL</button>
     </div>
 
     <div id="tela-menu" class="tela">
-        <h2 style="margin-bottom: 30px;">SELECIONE O JOGO</h2>
-        <button class="btn" onclick="iniciarJogo()">🐍 TESTE COBRINHA</button>
+        <h2 style="margin-bottom: 20px; color: var(--neon-cyan); font-size: 14px; font-family: 'Orbitron', sans-serif;">SELECIONE O MÓDULO</h2>
+        <div class="container-jogos">
+            <div class="neon-card" onclick="iniciarJogo('snake')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <path d="M20 50 L35 35 L50 35 L50 50 L65 50 L65 65 L80 65" stroke="#39ff14" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="80" cy="65" r="6" fill="#39ff14"/>
+                    </svg>
+                </div>
+                🐍 COBRINHA
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('breakout')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(157,0,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <rect x="10" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="30" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="50" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <rect x="70" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
+                        <circle cx="50" cy="60" r="5" fill="#00feff"/>
+                        <rect x="35" y="85" width="30" height="6" fill="#9d00ff" rx="3"/>
+                    </svg>
+                </div>
+                🧱 BLOCOS
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('space')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(0,254,255,0.2), rgba(0,153,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <path d="M20 40 L30 30 L40 40 L50 30 L60 40 L70 30 L80 40 L75 50 L25 50 Z" fill="#00feff"/>
+                        <circle cx="35" cy="42" r="3" fill="#0b1120"/>
+                        <circle cx="65" cy="42" r="3" fill="#0b1120"/>
+                        <path d="M45 70 L40 85 L50 80 L60 85 L55 70" fill="#9d00ff"/>
+                    </svg>
+                </div>
+                🚀 GALÁXIA
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('flap')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,0,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <ellipse cx="50" cy="50" rx="25" ry="20" fill="#ff6b00"/>
+                        <circle cx="60" cy="45" r="5" fill="#000"/>
+                        <path d="M30 50 L20 45 L20 55 Z" fill="#ff00ff"/>
+                    </svg>
+                </div>
+                🐦 NEON FLAP
+            </div>
+            <div class="neon-card" onclick="iniciarJogo('blobby')">
+                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
+                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
+                        <rect x="25" y="25" width="50" height="50" rx="8" fill="#39ff14"/>
+                        <rect x="35" y="40" width="6" height="6" fill="#000"/>
+                        <rect x="59" y="40" width="6" height="6" fill="#000"/>
+                        <rect x="42" y="55" width="16" height="3" fill="#000"/>
+                        <rect x="47" y="58" width="6" height="8" fill="#f44"/>
+                    </svg>
+                </div>
+                🟩 BLOBBY
+            </div>
+        </div>
     </div>
 
     <div id="tela-jogo" class="tela">
-        <div class="header">
-            <button onclick="voltarMenu()">SAIR</button>
-            <div>PONTOS: <span id="score">0</span></div>
-            <button onclick="alert('Pausado')">PAUSAR</button>
+        <div class="header-jogo">
+            <button onclick="voltarMenu()" style="background:none; border:none; color:#f44; font-family: 'Orbitron'; font-size: 10px;">SAIR</button>
+            <div style="text-align:center">
+                <div id="score-live">0</div>
+                <div id="record-live" style="color:#aaa;">RECORDE: 0</div>
+            </div>
+            <button onclick="alternarPausa()" id="btn-pausa" style="background:none; border:none; color:var(--neon-cyan); font-family: 'Orbitron'; font-size: 10px;">PAUSAR</button>
         </div>
-        <canvas id="canvas" width="300" height="400"></canvas>
-        <div id="gameover" style="display: none; position: absolute; text-align: center;">
-            <h2 style="color: #f44;">GAME OVER</h2>
-            <button class="btn" onclick="iniciarJogo()">JOGAR DE NOVO</button>
+        <canvas id="canvas" width="400" height="550"></canvas>
+        <div id="painel-gameover">
+            <h2 id="titulo-gameover" style="color:#f44;">SISTEMA FALHOU</h2>
+            <p id="score-final" style="margin:20px 0; color: white;"></p>
+            <button class="btn-principal" onclick="reiniciarJogo()">REPETIR</button>
         </div>
     </div>
 
-<script>
-console.log("SISTEMA INICIADO");
-
-let telaInicial = document.getElementById('tela-inicial');
-let telaMenu = document.getElementById('tela-menu');
-let telaJogo = document.getElementById('tela-jogo');
-let barra = document.getElementById('barra');
-
-function mostrarTela(nome) {
-    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-    document.getElementById(nome).classList.add('ativa');
-}
-
-// Loading fake de 1.5s
-setTimeout(() => {
-    barra.style.width = '100%';
-    setTimeout(() => {
-        mostrarTela('tela-menu');
-    }, 1000);
-}, 500);
-
-// JOGO TESTE - Quadrado que anda
-let canvas = document.getElementById('canvas');
-let ctx = canvas.getContext('2d');
-let x = 150, y = 200, pontos = 0;
-let rodando = false;
-
-function iniciarJogo() {
-    console.log("JOGO INICIADO");
-    mostrarTela('tela-jogo');
-    document.getElementById('gameover').style.display = 'none';
-    x = 150; y = 200; pontos = 0;
-    rodando = true;
-    loop();
-}
-
-function voltarMenu() {
-    rodando = false;
-    mostrarTela('tela-menu');
-}
-
-function loop() {
-    if (!rodando) return;
-    
-    // Limpa
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, 300, 400);
-    
-    // Desenha player
-    ctx.fillStyle = '#39ff14';
-    ctx.fillRect(x, y, 20);
-    
-    // Move
-    y += 2;
-    if (y > 400) {
-        y = 0;
-        pontos += 10;
-        document.getElementById('score').innerText = pontos;
-    }
-    
-    // Game over se bater embaixo
-    if (y > 380) {
-        rodando = false;
-        document.getElementById('gameover').style.display = 'block';
-        return;
-    }
-    
-    requestAnimationFrame(loop);
-}
-
-// Controles touch
-canvas.addEventListener('touchstart', (e) => {
-    let toque = e.touches[0].clientX;
-    if (toque < window.innerWidth / 2) {
-        x -= 20; // Esquerda
-    } else {
-        x += 20; // Direita
-    }
-    if (x < 0) x = 0;
-    if (x > 280) x = 280;
-});
-</script>
+    <script src="./js/audio.js?v=3"></script>
+    <script src="./js/engine.js?v=3"></script>
+    <script src="./js/interface.js?v=3"></script>
+    <script src="./js/jogos/cobrinha.js?v=3"></script>
+    <script src="./js/jogos/blocos.js?v=3"></script>
+    <script src="./js/jogos/galaxia.js?v=3"></script>
+    <script src="./js/jogos/flap.js?v=3"></script>
+    <script src="./js/jogos/blobby.js?v=3"></script>
 </body>
 </html>
