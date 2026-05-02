@@ -3,99 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Arcade OS - v11.0</title>
-
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./icone-192.png">
-    <link rel="icon" type="image/png" href="./icone-192.png">
-
+    <title>Neon Arcade OS - v12.0</title>
+    
+    <!-- REMOVIDO: manifest.json e sw.js pra matar o cache -->
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./css/visual.css?v=3">
+    
+    <style>
+        :root {
+            --neon-cyan: #00feff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-purple: #9d00ff;
+            --bg-dark: #0b1120;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: var(--bg-dark); 
+            color: var(--neon-cyan); 
+            font-family: 'Rajdhani', sans-serif; 
+            overflow: hidden;
+            user-select: none;
+        }
+       .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,254,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,254,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px; z-index: -1;
+        }
+       .tela { 
+            display: none; width: 100vw; height: 100vh; position: fixed; top: 0; left: 0;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+       .tela.ativa { display: flex; }
+       .logo-arcade {
+            font-family: 'Orbitron', sans-serif; font-size: 32px; font-weight: 900;
+            color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink);
+            margin-bottom: 20px; letter-spacing: 3px;
+        }
+        #barra-loading {
+            width: 0%; height: 100%; background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan); transition: width 1.5s ease;
+        }
+       .container-jogos {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 15px; padding: 20px; max-width: 400px;
+        }
+       .neon-card {
+            background: rgba(0,254,255,0.05); border: 2px solid var(--neon-cyan);
+            padding: 15px; text-align: center; cursor: pointer; font-family: 'Orbitron';
+            font-size: 11px; transition: all 0.3s;
+        }
+       .neon-card:active { 
+            background: var(--neon-cyan); color: #000; 
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+       .header-jogo {
+            position: absolute; top: 0; width: 100%; display: flex;
+            justify-content: space-between; align-items: center;
+            padding: 10px 15px; font-family: 'Orbitron'; font-size: 10px;
+            background: rgba(0,0,0,0.5);
+        }
+       .header-jogo button {
+            background: none; border: 1px solid; padding: 5px 10px;
+            font-family: 'Orbitron'; font-size: 10px; cursor: pointer;
+        }
+        #canvas { 
+            border: 2px solid var(--neon-cyan); background: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        #painel-gameover {
+            display: none; position: absolute; text-align: center;
+            background: rgba(0,0,0,0.9); padding: 20px;
+            border: 2px solid var(--neon-pink);
+        }
+       .btn-principal {
+            background: var(--neon-cyan); color: #000; border: none;
+            padding: 12px 25px; font-family: 'Orbitron'; font-size: 12px;
+            cursor: pointer; margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 <div class="grid-bg"></div>
-<div class="scanline"></div>
 
     <div id="tela-inicial" class="tela ativa">
         <h1 class="logo-arcade">NEON ARCADE</h1>
-        <div style="color: var(--neon-cyan); letter-spacing: 2px; font-size: 10px; font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">INICIANDO SISTEMA...</div>
-        <div style="width: 200px; height: 8px; background: #222; margin-bottom: 20px; border: 2px solid var(--neon-cyan); overflow: hidden;">
+        <div style="letter-spacing: 2px; font-size: 10px; margin-bottom: 10px;">INICIANDO SISTEMA...</div>
+        <div style="width: 200px; height: 8px; background: #222; border: 2px solid var(--neon-cyan);">
             <div id="barra-loading"></div>
         </div>
-        <button id="btn-instalar" class="btn-principal">📲 ADICIONAR À TELA INICIAL</button>
     </div>
 
     <div id="tela-menu" class="tela">
-        <h2 style="margin-bottom: 20px; color: var(--neon-cyan); font-size: 14px; font-family: 'Orbitron', sans-serif;">SELECIONE O MÓDULO</h2>
+        <h2 style="margin-bottom: 20px; font-size: 14px; font-family: 'Orbitron';">SELECIONE O MÓDULO</h2>
         <div class="container-jogos">
-            <div class="neon-card" onclick="iniciarJogo('snake')">
-                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
-                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
-                        <path d="M20 50 L35 35 L50 35 L50 50 L65 50 L65 65 L80 65" stroke="#39ff14" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="80" cy="65" r="6" fill="#39ff14"/>
-                    </svg>
-                </div>
-                🐍 COBRINHA
-            </div>
-            <div class="neon-card" onclick="iniciarJogo('breakout')">
-                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(157,0,255,0.2));">
-                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
-                        <rect x="10" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
-                        <rect x="30" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
-                        <rect x="50" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
-                        <rect x="70" y="15" width="15" height="8" fill="#ff00ff" rx="2"/>
-                        <circle cx="50" cy="60" r="5" fill="#00feff"/>
-                        <rect x="35" y="85" width="30" height="6" fill="#9d00ff" rx="3"/>
-                    </svg>
-                </div>
-                🧱 BLOCOS
-            </div>
-            <div class="neon-card" onclick="iniciarJogo('space')">
-                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(0,254,255,0.2), rgba(0,153,255,0.2));">
-                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
-                        <path d="M20 40 L30 30 L40 40 L50 30 L60 40 L70 30 L80 40 L75 50 L25 50 Z" fill="#00feff"/>
-                        <circle cx="35" cy="42" r="3" fill="#0b1120"/>
-                        <circle cx="65" cy="42" r="3" fill="#0b1120"/>
-                        <path d="M45 70 L40 85 L50 80 L60 85 L55 70" fill="#9d00ff"/>
-                    </svg>
-                </div>
-                🚀 GALÁXIA
-            </div>
-            <div class="neon-card" onclick="iniciarJogo('flap')">
-                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,0,255,0.2));">
-                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
-                        <ellipse cx="50" cy="50" rx="25" ry="20" fill="#ff6b00"/>
-                        <circle cx="60" cy="45" r="5" fill="#000"/>
-                        <path d="M30 50 L20 45 L20 55 Z" fill="#ff00ff"/>
-                    </svg>
-                </div>
-                🐦 NEON FLAP
-            </div>
-            <div class="neon-card" onclick="iniciarJogo('blobby')">
-                <div class="card-icon pulse-border" style="background: linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,254,255,0.2));">
-                    <svg style="width: 40px; height: 40px;" viewBox="0 0 100 100" fill="none">
-                        <rect x="25" y="25" width="50" height="50" rx="8" fill="#39ff14"/>
-                        <rect x="35" y="40" width="6" height="6" fill="#000"/>
-                        <rect x="59" y="40" width="6" height="6" fill="#000"/>
-                        <rect x="42" y="55" width="16" height="3" fill="#000"/>
-                        <rect x="47" y="58" width="6" height="8" fill="#f44"/>
-                    </svg>
-                </div>
-                🟩 BLOBBY
-            </div>
+            <div class="neon-card" onclick="iniciarJogo('snake')">🐍 COBRINHA</div>
+            <div class="neon-card" onclick="iniciarJogo('breakout')">🧱 BLOCOS</div>
+            <div class="neon-card" onclick="iniciarJogo('space')">🚀 GALÁXIA</div>
+            <div class="neon-card" onclick="iniciarJogo('flap')">🐦 NEON FLAP</div>
+            <div class="neon-card" onclick="iniciarJogo('blobby')">🟩 BLOBBY</div>
         </div>
     </div>
 
     <div id="tela-jogo" class="tela">
         <div class="header-jogo">
-            <button onclick="voltarMenu()" style="background:none; border:none; color:#f44; font-family: 'Orbitron'; font-size: 10px;">SAIR</button>
-            <div style="text-align:center">
+            <button onclick="voltarMenu()" style="border-color: #f44; color: #f44;">SAIR</button>
+            <div>
                 <div id="score-live">0</div>
-                <div id="record-live" style="color:#aaa;">RECORDE: 0</div>
+                <div id="record-live" style="color:#aaa; font-size: 8px;">RECORDE: 0</div>
             </div>
-            <button onclick="alternarPausa()" id="btn-pausa" style="background:none; border:none; color:var(--neon-cyan); font-family: 'Orbitron'; font-size: 10px;">PAUSAR</button>
+            <button onclick="alternarPausa()" id="btn-pausa" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">PAUSAR</button>
         </div>
-        <canvas id="canvas" width="400" height="550"></canvas>
+        <canvas id="canvas" width="320" height="480"></canvas>
         <div id="painel-gameover">
             <h2 id="titulo-gameover" style="color:#f44;">SISTEMA FALHOU</h2>
             <p id="score-final" style="margin:20px 0; color: white;"></p>
@@ -103,13 +125,196 @@
         </div>
     </div>
 
-    <script src="./js/audio.js?v=3"></script>
-    <script src="./js/engine.js?v=3"></script>
-    <script src="./js/interface.js?v=3"></script>
-    <script src="./js/jogos/cobrinha.js?v=3"></script>
-    <script src="./js/jogos/blocos.js?v=3"></script>
-    <script src="./js/jogos/galaxia.js?v=3"></script>
-    <script src="./js/jogos/flap.js?v=3"></script>
-    <script src="./js/jogos/blobby.js?v=3"></script>
+<script>
+// ===== INTERFACE =====
+console.log("SISTEMA v12.0 INICIADO - SEM SERVICE WORKER");
+
+// REMOVIDO: Todo código de Service Worker foi pro saco
+
+let jogoAtual = null;
+let jogoRodando = false;
+let jogoPausado = false;
+let gameLoopId = null;
+
+function mostrarTela(id) {
+    document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+    document.getElementById(id).classList.add('ativa');
+}
+
+// Loading automático
+window.addEventListener('load', () => {
+    document.getElementById('barra-loading').style.width = '100%';
+    setTimeout(() => {
+        mostrarTela('tela-menu');
+    }, 1600);
+});
+
+function iniciarJogo(nome) {
+    console.log("Iniciando:", nome);
+    jogoAtual = nome;
+    jogoRodando = true;
+    jogoPausado = false;
+    
+    mostrarTela('tela-jogo');
+    document.getElementById('painel-gameover').style.display = 'none';
+    document.getElementById('btn-pausa').innerText = 'PAUSAR';
+    
+    pararJogo();
+    
+    if (nome === 'snake') initSnake();
+    if (nome === 'breakout') initBreakout();
+    if (nome === 'space') initSpace();
+    if (nome === 'flap') initFlap();
+    if (nome === 'blobby') initBlobby();
+}
+
+function voltarMenu() {
+    jogoRodando = false;
+    jogoPausado = false;
+    pararJogo();
+    mostrarTela('tela-menu');
+}
+
+function alternarPausa() {
+    if (!jogoRodando) return;
+    jogoPausado =!jogoPausado;
+    document.getElementById('btn-pausa').innerText = jogoPausado? 'CONTINUAR' : 'PAUSAR';
+}
+
+function reiniciarJogo() {
+    if (jogoAtual) iniciarJogo(jogoAtual);
+}
+
+function mostrarGameOver(pontos) {
+    jogoRodando = false;
+    document.getElementById('score-final').innerText = `PONTUAÇÃO: ${pontos}`;
+    document.getElementById('painel-gameover').style.display = 'block';
+}
+
+function atualizarPlacar(pontos, recorde) {
+    document.getElementById('score-live').innerText = pontos;
+    document.getElementById('record-live').innerText = `RECORDE: ${recorde}`;
+}
+
+function pararJogo() {
+    if (gameLoopId) {
+        cancelAnimationFrame(gameLoopId);
+        gameLoopId = null;
+    }
+}
+
+// ===== ENGINE BÁSICO =====
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// ===== JOGO: COBRINHA TESTE =====
+function initSnake() {
+    let snake = [{x: 160, y: 240}];
+    let dx = 0, dy = -10;
+    let comida = {x: 100, y: 100};
+    let pontos = 0;
+    
+    function loop() {
+        if (!jogoRodando) return;
+        if (jogoPausado) {
+            gameLoopId = requestAnimationFrame(loop);
+            return;
+        }
+        
+        // Move
+        let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+        snake.unshift(head);
+        
+        // Comeu
+        if (head.x === comida.x && head.y === comida.y) {
+            pontos += 10;
+            atualizarPlacar(pontos, pontos);
+            comida = {
+                x: Math.floor(Math.random() * 32) * 10,
+                y: Math.floor(Math.random() * 48) * 10
+            };
+        } else {
+            snake.pop();
+        }
+        
+        // Colisão parede
+        if (head.x < 0 || head.x >= 320 || head.y < 0 || head.y >= 480) {
+            mostrarGameOver(pontos);
+            return;
+        }
+        
+        // Desenha
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 320, 480);
+        
+        ctx.fillStyle = '#39ff14';
+        snake.forEach(s => ctx.fillRect(s.x, s.y, 10, 10));
+        
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(comida.x, comida.y, 10, 10);
+        
+        gameLoopId = requestAnimationFrame(loop);
+    }
+    
+    // Controles
+    canvas.onclick = (e) => {
+        let rect = canvas.getBoundingClientRect();
+        let x = e.clientX - rect.left;
+        if (x < 160) { dx = -10; dy = 0; } // Esq
+        else { dx = 10; dy = 0; } // Dir
+    };
+    
+    canvas.ontouchstart = (e) => {
+        let touch = e.touches[0];
+        let rect = canvas.getBoundingClientRect();
+        let x = touch.clientX - rect.left;
+        let y = touch.clientY - rect.top;
+        
+        if (Math.abs(dx) > 0) { // Andando horizontal
+            if (y < 240) { dx = 0; dy = -10; } // Cima
+            else { dx = 0; dy = 10; } // Baixo
+        } else { // Andando vertical
+            if (x < 160) { dx = -10; dy = 0; } // Esq
+            else { dx = 10; dy = 0; } // Dir
+        }
+    };
+    
+    loop();
+}
+
+// ===== OUTROS JOGOS - PLACEHOLDER =====
+function initBreakout() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 320, 480);
+    ctx.fillStyle = '#ff00ff';
+    ctx.font = '20px Orbitron';
+    ctx.fillText('BLOCOS EM BREVE', 60, 240);
+}
+
+function initSpace() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 320, 480);
+    ctx.fillStyle = '#00feff';
+    ctx.font = '20px Orbitron';
+    ctx.fillText('GALÁXIA EM BREVE', 50, 240);
+}
+
+function initFlap() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 320, 480);
+    ctx.fillStyle = '#ff6b00';
+    ctx.font = '20px Orbitron';
+    ctx.fillText('FLAP EM BREVE', 70, 240);
+}
+
+function initBlobby() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 320, 480);
+    ctx.fillStyle = '#39ff14';
+    ctx.font = '20px Orbitron';
+    ctx.fillText('BLOBBY EM BREVE', 60, 240);
+}
+
+</script>
 </body>
 </html>
