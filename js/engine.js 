@@ -1,1 +1,80 @@
-// engine dentro
+let canvas, ctx;
+let particulas = [], estrelas = [], linhasGrade = [];
+let raioMouse = 80, mouseX = -1000, mouseY = -1000;
+
+function criarEstrelas() {
+    estrelas = [];
+    for (let i = 0; i < 100; i++) {
+        estrelas.push({
+            x: Math.random() * 400,
+            y: Math.random() * 550,
+            z: Math.random() * 1000,
+            raio: Math.random() * 1.5,
+            brilho: Math.random()
+        });
+    }
+}
+
+function criarGrade() {
+    linhasGrade = [];
+    for(let i = 0; i < 20; i++) {
+        linhasGrade.push({ x: i * 20, y: 0 });
+    }
+}
+
+function desenharFundo() {
+    ctx.fillStyle = '#0b1120';
+    ctx.fillRect(0, 0, 400, 550);
+    
+    // Estrelas
+    ctx.fillStyle = '#00feff';
+    estrelas.forEach(e => {
+        ctx.globalAlpha = e.brilho;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.raio, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+}
+
+function criarParticula(x, y, cor, vel=5) {
+    for(let i = 0; i < 15; i++) {
+        particulas.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * vel,
+            vy: (Math.random() - 0.5) * vel,
+            vida: 30,
+            cor: cor,
+            raio: Math.random() * 3 + 1
+        });
+    }
+}
+
+function atualizarParticulas() {
+    particulas = particulas.filter(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vida--;
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        return p.vida > 0;
+    });
+}
+
+function desenharParticulas() {
+    particulas.forEach(p => {
+        ctx.fillStyle = p.cor;
+        ctx.globalAlpha = p.vida / 30;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.raio, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+}
+
+function neon(x, y, r, c1, c2) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, c1);
+    g.addColorStop(1, c2);
+    return g;
+}
