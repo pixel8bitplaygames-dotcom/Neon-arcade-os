@@ -1,4 +1,4 @@
-// NEON ARCADE OS - CORE v1.6
+// NEON ARCADE OS - CORE v1.7
 // Sem sw.js, sem cache chato. Só funciona.
 
 const JOGOS = [
@@ -47,6 +47,11 @@ function irParaMenu() {
         jogoAtivo.parar();
         jogoAtivo = null;
     }
+    // FIX: Clona o canvas pra matar TODOS os event listeners antigos
+    const canvasVelho = document.getElementById('canvas');
+    const canvasNovo = canvasVelho.cloneNode(true);
+    canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+    
     mostrarTela('tela-menu');
     carregarListaJogos();
 }
@@ -73,17 +78,27 @@ function carregarJogo(idJogo) {
     const jogo = JOGOS.find(j => j.id === idJogo);
     if (!jogo) return;
 
+    // Para jogo anterior se existir
+    if (jogoAtivo) {
+        jogoAtivo.parar();
+        jogoAtivo = null;
+    }
+
     // Remove script antigo se existir
     const scriptVelho = document.getElementById('script-jogo');
     if (scriptVelho) scriptVelho.remove();
 
+    // FIX: Clona o canvas antes de carregar jogo novo
+    const canvasVelho = document.getElementById('canvas');
+    const canvasNovo = canvasVelho.cloneNode(true);
+    canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+
     const script = document.createElement('script');
     script.id = 'script-jogo';
-    script.src = `${jogo.arquivo}?v=${Date.now()}`; // Evita cache
+    script.src = `${jogo.arquivo}?v=${Date.now()}`;
 
     script.onload = () => {
         mostrarTela('tela-jogo');
-        // Cada jogo tem que ter uma função window.iniciarNomeDoJogo()
         const funcaoIniciar = window[`iniciar${idJogo.charAt(0).toUpperCase() + idJogo.slice(1)}`];
         if (funcaoIniciar) {
             jogoAtivo = funcaoIniciar(document.getElementById('canvas'));
@@ -94,7 +109,6 @@ function carregarJogo(idJogo) {
     };
 
     script.onerror = () => {
-        // Mensagem amigável pra jogo que ainda não existe
         alert(`${jogo.nome}\n\n🚧 EM BREVE 🚧\n\nEsse jogo ainda não foi adicionado.\nCria o arquivo games/${idJogo}.js pra liberar!`);
         voltarMenu();
     };
