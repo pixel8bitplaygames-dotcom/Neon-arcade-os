@@ -1,8 +1,9 @@
-// NEON ARCADE OS - CORE v1.0
+// NEON ARCADE OS - CORE v1.1
 // Sem sw.js, sem cache chato. Só funciona.
 
 const JOGOS = [
-  { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' }
+  { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' },
+  { id: 'breakout', nome: '🧱 NEON BREAKOUT', arquivo: './games/breakout.js' }
 ];
 
 let jogoAtivo = null;
@@ -12,16 +13,20 @@ let eventoInstalar = null;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     eventoInstalar = e;
-    document.getElementById('btn-instalar').style.display = 'block';
+    const btn = document.getElementById('btn-instalar');
+    if(btn) btn.style.display = 'block';
 });
 
-document.getElementById('btn-instalar').addEventListener('click', async () => {
-    if (!eventoInstalar) return;
-    eventoInstalar.prompt();
-    await eventoInstalar.userChoice;
-    eventoInstalar = null;
-    document.getElementById('btn-instalar').style.display = 'none';
-});
+const btnInstalar = document.getElementById('btn-instalar');
+if(btnInstalar) {
+    btnInstalar.addEventListener('click', async () => {
+        if (!eventoInstalar) return;
+        eventoInstalar.prompt();
+        await eventoInstalar.userChoice;
+        eventoInstalar = null;
+        btnInstalar.style.display = 'none';
+    });
+}
 
 // Troca de telas
 function mostrarTela(id) {
@@ -67,30 +72,36 @@ function carregarJogo(idJogo) {
     const script = document.createElement('script');
     script.id = 'script-jogo';
     script.src = `${jogo.arquivo}?v=${Date.now()}`; // Evita cache
-    
+
     script.onload = () => {
         mostrarTela('tela-jogo');
         // Cada jogo tem que ter uma função window.iniciarNomeDoJogo()
         const funcaoIniciar = window[`iniciar${idJogo.charAt(0).toUpperCase() + idJogo.slice(1)}`];
         if (funcaoIniciar) {
             jogoAtivo = funcaoIniciar(document.getElementById('canvas'));
+        } else {
+            alert(`Função iniciar${idJogo.charAt(0).toUpperCase() + idJogo.slice(1)} não encontrada!`);
+            voltarMenu();
         }
     };
-    
+
     script.onerror = () => {
-        alert(`Erro ao carregar ${jogo.nome}. Verifica se o arquivo existe.`);
+        alert(`Erro ao carregar ${jogo.nome}. Verifica se o arquivo games/${idJogo}.js existe.`);
     };
-    
+
     document.head.appendChild(script);
 }
 
 // Botão pausar
-document.getElementById('btn-pausa').onclick = () => {
-    if (jogoAtivo && jogoAtivo.pausar) {
-        const pausado = jogoAtivo.pausar();
-        document.getElementById('btn-pausa').textContent = pausado ? 'VOLTAR' : 'PAUSAR';
-    }
-};
+const btnPausa = document.getElementById('btn-pausa');
+if(btnPausa) {
+    btnPausa.onclick = () => {
+        if (jogoAtivo && jogoAtivo.pausar) {
+            const pausado = jogoAtivo.pausar();
+            btnPausa.textContent = pausado ? 'VOLTAR' : 'PAUSAR';
+        }
+    };
+}
 
 // Inicia tudo
 window.addEventListener('load', () => {
