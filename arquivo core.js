@@ -8,7 +8,7 @@ function mostrarTela(id) {
     document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
     document.getElementById(id).classList.add('ativa');
 }
-
+ 
 window.addEventListener('load', () => {
     document.getElementById('barra-loading').style.width = '100%';
     setTimeout(() => mostrarTela('tela-menu'), 1600);
