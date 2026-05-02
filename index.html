@@ -1,11 +1,11 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Neon Arcade OS - v10.3</title>
 
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmVvbiBBcmNhZGUgT1MiLCJzaG9ydF9uYW1lIjoiTmVvbkFyY2FkZSIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGIxMTIwIiwidGhlbWVfY29sb3IiOiIjMDBmZWZmIiwiaWNvbnMiOlt7InNyYyI6Imh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzUyNjAvNTI2MDQ5OC5wbmciLCJzaXplcyI6IjUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
+    <link rel="manifest" href="data:application/json;base64,ew0KICAibmFtZSI6ICJOZW9uIEFyY2FkZSBPUyIsDQogICJzaG9ydF9uYW1lIjogIk5lb24gQXJjYWRlIiwNCiAgImRlc2NyaXB0aW9uIjogIkNvbGVjYW8gZGUgNSBqb2dvcyBhcmNhZGUgcmV0cm8gY29tIGVmZWl0byBuZW9uIiwNCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLA0KICAic2NvcGUiOiAiLi8iLA0KICAiaWQiOiAiL2luZGV4Lmh0bWwiLA0KICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwNCiAgImRpc3BsYXlfb3ZlcnJpZGUiOiBbInN0YW5kYWxvbmUiXSwNCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBiMTEyMCIsDQogICJ0aGVtZV9jb2xvciI6ICIjMDBmZWZmIiwNCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0LXByaW1hcnkiLA0KICAiY2F0ZWdvcmllcyI6IFsiZ2FtZXMiLCAiZW50ZXJ0YWlubWVudCJdLA0KICAibGFuZyI6ICJwdC1CUiIsDQogICJwcmVmZXJyZWRfcmVsYXRlZF9hcHBsaWNhdGlvbnMiOiBmYWxzZSwNCiAgImljb25zIjogWw0KICAgIHsNCiAgICAgICJzcmMiOiAiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvNTI2MC81MjYwNDk4LnBuZyIsDQogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsDQogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLA0KICAgICAgInB1cnBvc2UiOiAiYW55Ig0KICAgIH0sDQogICAgew0KICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcua2xhdGljb24uY29tLzUxMi81MjYwLzUyNjA0OTgucG5nIiwNCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwNCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIsDQogICAgICAicHVycG9zZSI6ICJhbnkiDQogICAgfSwNCiAgICB7DQogICAgICAic3JjIjogImh0dHBzOi8vY2RuLWljb25zLXBuZy5mbGF0aWNvbi5jb20vNTEyLzUyNjAvNTI2MDQ5OC5wbmciLA0KICAgICAgInNpemVzIjogIjUxMng1MTIiLA0KICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwNCiAgICAgICJwdXJwb3NlIjogIm1hc2thYmxlIg0KICAgIH0NCiAgXSwNCiAgInNob3J0Y3V0cyI6IFsNCiAgICB7DQogICAgICAibmFtZSI6ICJDb2JyaW5oYSIsDQogICAgICAidXJsIjogIi4vaW5kZXguaHRtbD9qb2dvPXNuYWtlIg0KICAgIH0sDQogICAgew0KICAgICAgIm5hbWUiOiAiQmxvY29zIiwNCiAgICAgICJ1cmwiOiAiLi9pbmRleC5odG1sP2pvZ289YnJlYWtvdXQiDQogICAgfQ0KICBdDQp9">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5260/5260498.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/5260/5260498.png">
 
@@ -44,7 +44,7 @@
         }
         @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.98; } }
 
-    .grid-bg {
+   .grid-bg {
             position: fixed;
             top: 0;
             left: 0;
@@ -63,7 +63,7 @@
             100% { transform: translate(50px, 50px); }
         }
 
-    .scanline {
+   .scanline {
             position: fixed;
             top: 0;
             left: 0;
@@ -76,13 +76,13 @@
             opacity: 0.3;
         }
 
-    .tela { display: none; width: 100%; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
-    .ativa { display: flex; }
+   .tela { display: none; width: 100%; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
+   .ativa { display: flex; }
 
-    .font-neon { font-family: 'Orbitron', sans-serif; }
-    .neon-text-cyan { color: var(--neon-cyan); text-shadow: var(--text-glow); }
+   .font-neon { font-family: 'Orbitron', sans-serif; }
+   .neon-text-cyan { color: var(--neon-cyan); text-shadow: var(--text-glow); }
 
-    .logo-arcade {
+   .logo-arcade {
             font-family: 'Orbitron', sans-serif;
             font-size: 32px;
             color: var(--neon-cyan);
@@ -97,7 +97,7 @@
             50% { text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan), 0 0 60px var(--neon-cyan); }
         }
 
-    .icon-controle {
+   .icon-controle {
             width: 80px;
             height: 80px;
             margin-bottom: 20px;
@@ -106,7 +106,7 @@
         }
         @keyframes flutuar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
-    .btn-principal {
+   .btn-principal {
             padding: 18px 40px;
             font-size: 14px;
             font-family: 'Orbitron', sans-serif;
@@ -115,7 +115,7 @@
             border: none;
             border-radius: 0px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 0 2px #000;
+            box-shadow: 0 0 20px rgba(0,255,0.5), inset 0 0 0 2px #000;
             transition: 0.2s;
             z-index: 110;
             text-transform: uppercase;
@@ -127,7 +127,7 @@
             0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.5), inset 0 0 0 2px #000; }
             50% { box-shadow: 0 0 40px rgba(0,255,255,0.8), inset 0 0 0 2px #000; }
         }
-    .btn-principal:active { transform: scale(0.95); background: #fff; }
+   .btn-principal:active { transform: scale(0.95); background: #fff; }
 
         #btn-instalar {
             background: #ff6b00;
@@ -135,7 +135,7 @@
             margin-bottom: 20px;
         }
 
-    .container-jogos {
+   .container-jogos {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
@@ -144,7 +144,7 @@
             padding: 20px;
         }
 
-    .neon-card {
+   .neon-card {
             background: linear-gradient(135deg, rgba(19, 27, 46, 0.9), rgba(11, 17, 32, 0.9));
             backdrop-filter: blur(10px);
             border: 2px solid var(--neon-cyan);
@@ -158,13 +158,13 @@
             transition: 0.3s;
             box-shadow: 0 0 10px rgba(0,255,255,0.3), inset 0 0 10px rgba(0,255,255,0.1);
         }
-    .neon-card:active {
+   .neon-card:active {
             background: rgba(0,255,255,0.2);
             box-shadow: 0 0 30px rgba(0,255,255,0.8), inset 0 0 20px rgba(0,255,255,0.3);
             transform: scale(0.98);
         }
 
-    .card-icon {
+   .card-icon {
             width: 60px;
             height: 60px;
             margin: 0 auto 10px;
@@ -174,7 +174,7 @@
             justify-content: center;
         }
 
-    .pulse-border {
+   .pulse-border {
             animation: pulse-border 2s ease-in-out infinite;
         }
         @keyframes pulse-border {
@@ -193,7 +193,7 @@
             image-rendering: pixelated;
         }
 
-    .header-jogo {
+   .header-jogo {
             width: 100%;
             display: flex;
             justify-content: space-between;
@@ -223,7 +223,7 @@
             z-index: 200;
             backdrop-filter: blur(15px);
             width: 85%; max-width: 320px;
-            box-shadow: 0 0 30px rgba(255,68,68,0.6);
+            box-shadow: 0 0 30px rgba(255,68,0.6);
         }
         #titulo-gameover { font-size: 16px!important; font-family: 'Orbitron', sans-serif; }
         #score-final { font-size: 12px!important; font-family: 'Orbitron', sans-serif; }
@@ -412,7 +412,9 @@
             if(h.x<0||h.x>=20||h.y<0||h.y>=27||snk.some(s=>s.x===h.x&&s.y===h.y)){ gameOver(); return; }
             snk.unshift(h); if(h.x===mc.x&&h.y===mc.y){ pontos+=10; criarExplosao(h.x*20+10,h.y*20+10,"255,68,68"); mc={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*25)}; bip(440,'sine',0.1); if(sV > 70) sV -= 2; } else snk.pop();
             document.getElementById('score-live').textContent=pontos; timeoutId=setTimeout(loopSnake,sV);
-        }        // --- BLOCOS COM FASES ---
+        }
+
+        // --- BLOCOS COM FASES ---
         let padX, bX, bY, bDX, bDY, brks=[], lBk=1, faseBreakout=1;
         function iniciarBreakout(reset) {
             cancelAnimationFrame(animFrameId);
@@ -490,7 +492,7 @@
             bX+=bDX; bY+=bDY;
             if(bX<8||bX>392) bDX*=-1;
             if(bY<10) bDY*=-1;
-            if(bY>515 && bY<535 && bX>padX && bX<padX+90){ bY=515; bDY=-Math.abs(bDY); bip(300,'sine',0.05); }
+            if(bY>515 && bY<535&& bX>padX && bX<padX+90){ bY=515; bDY=-Math.abs(bDY); bip(300,'sine',0.05); }
             if(bY>550){ gameOver(); return; }
             document.getElementById('score-live').textContent=pontos; animFrameId = requestAnimationFrame(loopBreakout);
         }
@@ -841,4 +843,4 @@
         }, { passive: false });
     </script>
 </body>
-    </html>
+                            </html>
