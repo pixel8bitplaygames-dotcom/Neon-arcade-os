@@ -1,6 +1,4 @@
-// NEON SNAKE - v1.0
-// Jogo modular pro Neon Arcade OS
-
+// NEON SNAKE - v2.0 COM TELA GAME OVER
 function iniciarSnake(canvas) {
     const ctx = canvas.getContext('2d');
     let pausado = false;
@@ -74,14 +72,12 @@ function iniciarSnake(canvas) {
         ctx.clearRect(0,0,400,550); 
         desenharParticulas();
         
-        // Maçã
         setNeon("#f44", 15); 
         ctx.beginPath(); 
         ctx.arc(mc.x*20+10, mc.y*20+10, 8, 0, Math.PI*2); 
         ctx.fill(); 
         resetNeon();
         
-        // Cobra
         snk.forEach((p, i) => { 
             if(i===0) desenharRostoCobra(p.x, p.y); 
             else { 
@@ -93,7 +89,6 @@ function iniciarSnake(canvas) {
         
         let h = {x:snk[0].x+sDx, y:snk[0].y+sDy};
         
-        // Colisão
         if(h.x<0||h.x>=20||h.y<0||h.y>=27||snk.some(s=>s.x===h.x&&s.y===h.y)){ 
             gameOver(); 
             return; 
@@ -101,7 +96,6 @@ function iniciarSnake(canvas) {
         
         snk.unshift(h); 
         
-        // Comeu maçã
         if(h.x===mc.x&&h.y===mc.y){ 
             pontos+=10; 
             criarExplosao(h.x*20+10,h.y*20+10,"255,68,68"); 
@@ -113,19 +107,54 @@ function iniciarSnake(canvas) {
         timeoutId = setTimeout(loop, sV);
     }
 
+    // GAME OVER NOVO - SEM ALERT
     function gameOver() {
         gameOverAtivo = true;
         clearTimeout(timeoutId);
+        cancelAnimationFrame(animFrameId);
+        
         if(pontos > recorde) { 
             recorde = pontos; 
             localStorage.setItem("recorde_snake", recorde); 
             document.getElementById('record-live').textContent = "RECORDE: " + recorde; 
         }
-        alert(`SISTEMA FALHOU\nPONTOS: ${pontos}`);
-        voltarMenu();
+        
+        // Desenha tela de game over DENTRO do canvas
+        ctx.fillStyle = 'rgba(0,0,0,0.9)';
+        ctx.fillRect(0, 0, 400, 550);
+        
+        ctx.font = '24px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        setNeon('#f44', 20);
+        ctx.fillText('SISTEMA', 200, 200);
+        ctx.fillText('FALHOU', 200, 240);
+        resetNeon();
+        
+        ctx.font = '12px "Press Start 2P"';
+        setNeon('#0ff', 10);
+        ctx.fillText(`PONTOS: ${pontos}`, 200, 300);
+        resetNeon();
+        
+        if(pontos >= recorde && pontos > 0) {
+            setNeon('#ff0', 15);
+            ctx.fillText('NOVO RECORDE!', 200, 330);
+            resetNeon();
+        }
+        
+        setNeon('#aaa', 5);
+        ctx.font = '10px "Press Start 2P"';
+        ctx.fillText('TOQUE PARA VOLTAR', 200, 400);
+        resetNeon();
+        
+        const voltarClick = () => {
+            canvas.removeEventListener('click', voltarClick);
+            canvas.removeEventListener('touchstart', voltarClick);
+            voltarMenu();
+        };
+        canvas.addEventListener('click', voltarClick);
+        canvas.addEventListener('touchstart', voltarClick);
     }
 
-    // Controles touch
     function handleTouchStart(e) {
         tStartX = e.touches[0].clientX; 
         tStartY = e.touches[0].clientY;
@@ -155,10 +184,8 @@ function iniciarSnake(canvas) {
     canvas.addEventListener('touchstart', handleTouchStart, {passive: true});
     canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
 
-    // Inicia o jogo
     loop();
 
-    // Retorna controles pro core.js
     return {
         pausar: () => {
             pausado =!pausado;
