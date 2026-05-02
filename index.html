@@ -1,1 +1,38 @@
-cd
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Neon Arcade OS</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/arcade.css?v=1">
+    <script src="./js/core.js?v=1" defer></script>
+</head>
+<body>
+    <div id="tela-inicial" class="tela ativa">
+        <img class="icon-controle" src="./icon-192.png" alt="Controle">
+        <h1 class="logo-arcade">NEON ARCADE</h1>
+        <button id="btn-instalar" class="btn-principal" style="display:none;">📲 INSTALAR APP</button>
+        <button class="btn-principal" onclick="irParaMenu()">INICIAR</button>
+    </div>
+
+    <div id="tela-menu" class="tela">
+        <h2 style="margin-bottom:20px;color:#0ff;font-size:14px;">SELECIONE O MODULO</h2>
+        <div class="container-jogos" id="lista-jogos"></div>
+    </div>
+
+    <div id="tela-jogo" class="tela">
+        <div class="header-jogo">
+            <button onclick="voltarMenu()" style="background:none;border:none;color:#f44;font-family:'Press Start 2P';font-size:10px;">SAIR</button>
+            <div style="text-align:center">
+                <div id="score-live">0</div>
+                <div id="record-live" style="color:#aaa;font-size:8px;">RECORDE: 0</div>
+            </div>
+            <button id="btn-pausa" style="background:none;border:none;color:#0ff;font-family:'Press Start 2P';font-size:10px;">PAUSAR</button>
+        </div>
+        <canvas id="canvas" width="400" height="550"></canvas>
+    </div>
+</body>
+</html>
