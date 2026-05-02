@@ -1,4 +1,4 @@
-// NEON BREAKOUT - v1.0
+// NEON BREAKOUT - v1.1 MECÂNICA MELHORADA
 function iniciarBreakout(canvas) {
     const ctx = canvas.getContext('2d');
     let pausado = false;
@@ -8,11 +8,11 @@ function iniciarBreakout(canvas) {
     let pontos = 0;
     let recorde = localStorage.getItem("recorde_breakout") || 0;
 
-    // Bola
-    let bola = { x: 200, y: 400, vx: 4, vy: -4, r: 8 };
+    // Bola mais lenta pra dar tempo de reagir
+    let bola = { x: 200, y: 400, vx: 3, vy: -3, r: 8 };
 
-    // Raquete
-    let raquete = { x: 160, y: 500, w: 80, h: 10, vx: 0 };
+    // Raquete maior e mais rápida
+    let raquete = { x: 150, y: 500, w: 100, h: 12, vx: 0 };
 
     // Blocos
     let blocos = [];
@@ -34,7 +34,8 @@ function iniciarBreakout(canvas) {
         }
     }
 
-    let tStartX = 0;
+    let tocando = false;
+    let ultimoX = 0;
 
     document.getElementById('record-live').textContent = "RECORDE: " + recorde;
     document.getElementById('score-live').textContent = pontos;
@@ -50,8 +51,8 @@ function iniciarBreakout(canvas) {
 
     function reiniciar() {
         pontos = 0;
-        bola = { x: 200, y: 400, vx: 4, vy: -4, r: 8 };
-        raquete = { x: 160, y: 500, w: 80, h: 10, vx: 0 };
+        bola = { x: 200, y: 400, vx: 3, vy: -3, r: 8 };
+        raquete = { x: 150, y: 500, w: 100, h: 12, vx: 0 };
         blocos.forEach(b => b.vivo = true);
         gameOverAtivo = false;
         pausado = false;
@@ -64,8 +65,9 @@ function iniciarBreakout(canvas) {
 
         ctx.clearRect(0,0,400,550);
 
-        // Move raquete
+        // Move raquete com interpolação suave
         raquete.x += raquete.vx;
+        raquete.vx *= 0.8; // Desacelera sozinho
         if(raquete.x < 0) raquete.x = 0;
         if(raquete.x > 400 - raquete.w) raquete.x = 400 - raquete.w;
 
@@ -74,24 +76,34 @@ function iniciarBreakout(canvas) {
         bola.y += bola.vy;
 
         // Colisão paredes
-        if(bola.x - bola.r < 0 || bola.x + bola.r > 400) bola.vx *= -1;
-        if(bola.y - bola.r < 0) bola.vy *= -1;
+        if(bola.x - bola.r < 0 || bola.x + bola.r > 400) {
+            bola.vx *= -1;
+            bola.x = bola.x - bola.r < 0? bola.r : 400 - bola.r;
+        }
+        if(bola.y - bola.r < 0) {
+            bola.vy *= -1;
+            bola.y = bola.r;
+        }
 
-        // Colisão raquete
+        // Colisão raquete MELHORADA
         if(bola.y + bola.r > raquete.y &&
+           bola.y - bola.r < raquete.y + raquete.h &&
            bola.x > raquete.x &&
            bola.x < raquete.x + raquete.w &&
            bola.vy > 0) {
             bola.vy *= -1;
+            bola.y = raquete.y - bola.r; // Empurra pra fora
             let hitPos = (bola.x - raquete.x) / raquete.w;
-            bola.vx = 8 * (hitPos - 0.5);
+            bola.vx = 6 * (hitPos - 0.5); // Ângulo baseado onde bateu
         }
 
         // Colisão blocos
         blocos.forEach(b => {
             if(b.vivo &&
-               bola.x > b.x && bola.x < b.x + b.w &&
-               bola.y > b.y && bola.y < b.y + b.h) {
+               bola.x + bola.r > b.x &&
+               bola.x - bola.r < b.x + b.w &&
+               bola.y + bola.r > b.y &&
+               bola.y - bola.r < b.y + b.h) {
                 b.vivo = false;
                 bola.vy *= -1;
                 pontos += 10;
@@ -186,19 +198,29 @@ function iniciarBreakout(canvas) {
         canvas.addEventListener('touchstart', reiniciarClick);
     }
 
+    // CONTROLE MELHORADO - Segue o dedo direto
     function handleTouchStart(e) {
-        tStartX = e.touches[0].clientX;
+        tocando = true;
+        ultimoX = e.touches[0].clientX;
     }
 
     function handleTouchMove(e) {
-        if(pausado || gameOverAtivo) return;
+        if(pausado || gameOverAtivo ||!tocando) return;
         e.preventDefault();
-        const dx = e.touches[0].clientX - tStartX;
-        raquete.vx = dx * 0.3;
-        tStartX = e.touches[0].clientX;
+
+        const toqueX = e.touches[0].clientX;
+        const canvasRect = canvas.getBoundingClientRect();
+        const canvasX = toqueX - canvasRect.left;
+
+        // Raquete segue o dedo com escala
+        const escala = canvas.width / canvasRect.width;
+        raquete.x = (canvasX * escala) - (raquete.w / 2);
+
+        ultimoX = toqueX;
     }
 
     function handleTouchEnd() {
+        tocando = false;
         raquete.vx = 0;
     }
 
