@@ -31,9 +31,10 @@ function iniciarPong(canvas) {
         y: H / 2,
         w: 12,
         h: 12,
-        vx: 5,
-        vy: 3,
-        speed: 5
+        vx: 4,
+        vy: 2,
+        speed: 4,
+        maxSpeed: 8 // VELOCIDADE MÁXIMA
     };
 
     // HUD
@@ -77,7 +78,16 @@ function iniciarPong(canvas) {
         bola.x = W / 2;
         bola.y = H / 2;
         bola.vx = (Math.random() > 0.5? 1 : -1) * bola.speed;
-        bola.vy = (Math.random() - 0.5) * bola.speed;
+        bola.vy = (Math.random() - 0.5) * bola.speed * 0.5;
+    }
+
+    // Limita velocidade da bola
+    function limitarVelocidade() {
+        const velocidade = Math.sqrt(bola.vx * bola.vx + bola.vy * bola.vy);
+        if (velocidade > bola.maxSpeed) {
+            bola.vx = (bola.vx / velocidade) * bola.maxSpeed;
+            bola.vy = (bola.vy / velocidade) * bola.maxSpeed;
+        }
     }
 
     // Update
@@ -107,26 +117,35 @@ function iniciarPong(canvas) {
         bola.y += bola.vy;
 
         // Colisão bola com topo/baixo
-        if (bola.y <= 0 || bola.y + bola.h >= H) {
-            bola.vy *= -1;
+        if (bola.y <= 0) {
+            bola.y = 0;
+            bola.vy = Math.abs(bola.vy);
+        }
+        if (bola.y + bola.h >= H) {
+            bola.y = H - bola.h;
+            bola.vy = -Math.abs(bola.vy);
         }
 
         // Colisão bola com player1
         if (bola.x <= player1.x + player1.w &&
             bola.x + bola.w >= player1.x &&
             bola.y + bola.h >= player1.y &&
-            bola.y <= player1.y + player1.h) {
-            bola.vx = Math.abs(bola.vx);
-            bola.vy += (bola.y - (player1.y + player1.h / 2)) * 0.2;
+            bola.y <= player1.y + player1.h &&
+            bola.vx < 0) {
+            bola.vx = Math.abs(bola.vx) * 1.05; // Acelera um pouco
+            bola.vy += (bola.y - (player1.y + player1.h / 2)) * 0.15;
+            limitarVelocidade();
         }
 
         // Colisão bola com player2
         if (bola.x + bola.w >= player2.x &&
             bola.x <= player2.x + player2.w &&
             bola.y + bola.h >= player2.y &&
-            bola.y <= player2.y + player2.h) {
-            bola.vx = -Math.abs(bola.vx);
-            bola.vy += (bola.y - (player2.y + player2.h / 2)) * 0.2;
+            bola.y <= player2.y + player2.h &&
+            bola.vx > 0) {
+            bola.vx = -Math.abs(bola.vx) * 1.05; // Acelera um pouco
+            bola.vy += (bola.y - (player2.y + player2.h / 2)) * 0.15;
+            limitarVelocidade();
         }
 
         // Gol player 2
@@ -186,7 +205,7 @@ function iniciarPong(canvas) {
         ctx.fillRect(bola.x, bola.y, bola.w, bola.h);
         ctx.shadowBlur = 0;
 
-        // Fim de jogo
+        // FIM DE JOGO
         if (gameOver) {
             ctx.fillStyle = 'rgba(0,0,0,0.8)';
             ctx.fillRect(0, 0, W, H);
