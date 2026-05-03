@@ -82,7 +82,7 @@ function iniciarHacker(canvas) {
     function update() {
         if (gameOver || pausado) return;
         
-        // AUTO-FIRE - Atira sozinho a cada 300ms
+        // AUTO-FIRE
         const agora = Date.now();
         if (agora - ultimoTiro > tiroDelay) {
             tiros.push({
@@ -196,7 +196,6 @@ function iniciarHacker(canvas) {
     
     // Desenhar
     function draw() {
-        // Fundo
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, W, H);
         
@@ -243,7 +242,7 @@ function iniciarHacker(canvas) {
         });
         ctx.shadowBlur = 0;
         
-        // FIM DE JOGO - TUDO EM PT-BR
+        // FIM DE JOGO - REINICIA EM VEZ DE SAIR
         if (gameOver) {
             ctx.fillStyle = 'rgba(0,0,0,0.8)';
             ctx.fillRect(0, 0, W, H);
@@ -259,7 +258,7 @@ function iniciarHacker(canvas) {
             ctx.font = '12px "Press Start 2P"';
             ctx.shadowBlur = 0;
             ctx.fillText(`PONTOS: ${score}`, W/2, H/2 + 20);
-            ctx.fillText('TOQUE PARA VOLTAR', W/2, H/2 + 50);
+            ctx.fillText('TOQUE PARA RECOMEÇAR', W/2, H/2 + 50);
         }
         
         if (pausado && !gameOver) {
@@ -283,17 +282,23 @@ function iniciarHacker(canvas) {
         animId = requestAnimationFrame(loop);
     }
     
+    function parar() {
+        cancelAnimationFrame(animId);
+        canvas.onclick = null;
+    }
+    
     loop();
     
+    // MUDANÇA: REINICIA O JOGO EM VEZ DE VOLTAR PRO MENU
     canvas.onclick = () => {
-        if (gameOver) voltarMenu();
+        if (gameOver) {
+            parar();
+            iniciarHacker(canvas);
+        }
     };
     
     return {
-        parar: () => {
-            cancelAnimationFrame(animId);
-            canvas.onclick = null;
-        },
+        parar: parar,
         pausar: () => {
             pausado = !pausado;
             return pausado;
