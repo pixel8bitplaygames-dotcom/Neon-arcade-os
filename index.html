@@ -1,5 +1,6 @@
-// NEON ARCADE OS - CORE v1.7
+// NEON ARCADE OS - CORE v1.7.1
 // Sem sw.js, sem cache chato. Só funciona.
+// FIX: Proteção no cloneNode pra não quebrar se canvas não existir
 
 const JOGOS = [
   { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' },
@@ -47,10 +48,12 @@ function irParaMenu() {
         jogoAtivo.parar();
         jogoAtivo = null;
     }
-    // FIX: Clona o canvas pra matar TODOS os event listeners antigos
+    // FIX v1.7.1: Só clona se o canvas existir
     const canvasVelho = document.getElementById('canvas');
-    const canvasNovo = canvasVelho.cloneNode(true);
-    canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+    if (canvasVelho) {
+        const canvasNovo = canvasVelho.cloneNode(true);
+        canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+    }
     
     mostrarTela('tela-menu');
     carregarListaJogos();
@@ -88,10 +91,12 @@ function carregarJogo(idJogo) {
     const scriptVelho = document.getElementById('script-jogo');
     if (scriptVelho) scriptVelho.remove();
 
-    // FIX: Clona o canvas antes de carregar jogo novo
+    // FIX v1.7.1: Só clona se o canvas existir
     const canvasVelho = document.getElementById('canvas');
-    const canvasNovo = canvasVelho.cloneNode(true);
-    canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+    if (canvasVelho) {
+        const canvasNovo = canvasVelho.cloneNode(true);
+        canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
+    }
 
     const script = document.createElement('script');
     script.id = 'script-jogo';
