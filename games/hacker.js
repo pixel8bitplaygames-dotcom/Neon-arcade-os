@@ -58,7 +58,6 @@ function iniciarHacker(canvas) {
     
     canvas.addEventListener('touchstart', (e) => {
         toqueX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-        atirar();
     });
     
     canvas.addEventListener('touchmove', (e) => {
@@ -73,16 +72,19 @@ function iniciarHacker(canvas) {
     window.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft') player.vx = -player.speed;
         if (e.key === 'ArrowRight') player.vx = player.speed;
-        if (e.key === ' ' || e.code === 'Space') atirar();
     });
     
     window.addEventListener('keyup', (e) => {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') player.vx = 0;
     });
     
-    function atirar() {
+    // Update
+    function update() {
+        if (gameOver || pausado) return;
+        
+        // AUTO-FIRE - Atira sozinho a cada 300ms
         const agora = Date.now();
-        if (agora - ultimoTiro > tiroDelay && !gameOver && !pausado) {
+        if (agora - ultimoTiro > tiroDelay) {
             tiros.push({
                 x: player.x + player.w / 2 - 2,
                 y: player.y,
@@ -92,11 +94,6 @@ function iniciarHacker(canvas) {
             });
             ultimoTiro = agora;
         }
-    }
-    
-    // Update
-    function update() {
-        if (gameOver || pausado) return;
         
         // Mover player
         if (toqueX !== null) {
