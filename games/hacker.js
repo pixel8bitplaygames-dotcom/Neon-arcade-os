@@ -243,7 +243,7 @@ function iniciarHacker(canvas) {
         });
         ctx.shadowBlur = 0;
         
-        // Game Over
+        // FIM DE JOGO - TUDO EM PT-BR
         if (gameOver) {
             ctx.fillStyle = 'rgba(0,0,0,0.8)';
             ctx.fillRect(0, 0, W, H);
@@ -253,13 +253,13 @@ function iniciarHacker(canvas) {
             ctx.textAlign = 'center';
             ctx.shadowColor = '#f44';
             ctx.shadowBlur = 10;
-            ctx.fillText('GAME OVER', W/2, H/2 - 20);
+            ctx.fillText('FIM DE JOGO', W/2, H/2 - 20);
             
             ctx.fillStyle = '#fff';
             ctx.font = '12px "Press Start 2P"';
             ctx.shadowBlur = 0;
-            ctx.fillText(`SCORE: ${score}`, W/2, H/2 + 20);
-            ctx.fillText('TOQUE PRA VOLTAR', W/2, H/2 + 50);
+            ctx.fillText(`PONTOS: ${score}`, W/2, H/2 + 20);
+            ctx.fillText('TOQUE PARA VOLTAR', W/2, H/2 + 50);
         }
         
         if (pausado && !gameOver) {
