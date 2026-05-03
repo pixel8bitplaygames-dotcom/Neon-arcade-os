@@ -2,53 +2,93 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0a0a0a">
-    <title>NEON ARCADE OS</title>
-    
-    <!-- ESSA PARTE ATIVA A FONTE NEON -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON ARCADE OS - TESTE</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
-    <!-- ESSA PARTE ATIVA O CSS - SE TIRAR DÁ NUVEM DE PALAVRA -->
-    <link rel="stylesheet" href="css/style.css">
-    
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <!-- CSS INLINE - IMPOSSÍVEL DAR ERRADO -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0a0a0a; 
+            color: #0ff; 
+            font-family: 'Press Start 2P', monospace;
+            overflow: hidden;
+        }
+        /* ESSAS 2 LINHAS MATAM A NUVEM DE PALAVRA */
+        .tela { display: none; position: absolute; width: 100%; height: 100%; }
+        .tela.ativa { display: flex; flex-direction: column; }
+        
+        #tela-menu { padding: 20px; }
+        h1 { font-size: 18px; text-align: center; padding: 20px; text-shadow: 0 0 10px #0ff; }
+        #lista-jogos { display: grid; gap: 15px; }
+        .jogo-card { 
+            background: rgba(0,255,255,0.1); 
+            border: 2px solid #0ff; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 12px;
+            cursor: pointer;
+        }
+        #tela-jogo { background: #000; }
+        #hud { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px; 
+            border-bottom: 2px solid #0ff;
+            font-size: 10px;
+        }
+        #canvas { 
+            display: block; 
+            margin: 20px auto; 
+            border: 2px solid #0ff; 
+            background: #0a0a0a;
+        }
+    </style>
 </head>
 <body>
-    <!-- TELA DO MENU - TEM QUE TER class="tela ativa" -->
+    <!-- TELA DO MENU -->
     <div id="tela-menu" class="tela ativa">
-        <header>
-            <h1>NEON ARCADE OS</h1>
-            <button id="btn-instalar" style="display:none;">📱 INSTALAR APP</button>
-        </header>
-        
-        <main>
-            <div id="lista-jogos"></div>
-        </main>
-        
-        <footer>
-            <p>v1.7.1 | Feito com 💚</p>
-        </footer>
+        <h1>NEON ARCADE OS</h1>
+        <div id="lista-jogos"></div>
     </div>
 
-    <!-- TELA DO JOGO - TEM QUE TER class="tela" -->
+    <!-- TELA DO JOGO -->
     <div id="tela-jogo" class="tela">
         <div id="hud">
-            <div class="hud-info">
-                <span id="score-live">0</span>
-                <span id="record-live">RECORDE: 0</span>
-            </div>
+            <span id="score-live">0</span>
             <button id="btn-pausa">PAUSAR</button>
         </div>
-        
         <canvas id="canvas" width="400" height="550"></canvas>
     </div>
 
-    <!-- ESSA PARTE ATIVA O JAVASCRIPT - SE TIRAR NADA FUNCIONA -->
-    <script src="js/core.js"></script>
+    <!-- JS INLINE TAMBÉM -->
+    <script>
+        const JOGOS = [
+          { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' },
+          { id: 'racer', nome: '🏎️ NEON RACER', arquivo: './games/racer.js' }
+        ];
+
+        function mostrarTela(id) {
+            document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+            document.getElementById(id).classList.add('ativa');
+        }
+
+        function carregarListaJogos() {
+            const container = document.getElementById('lista-jogos');
+            container.innerHTML = '';
+            JOGOS.forEach(jogo => {
+                const card = document.createElement('div');
+                card.className = 'jogo-card';
+                card.textContent = jogo.nome;
+                card.onclick = () => alert('Jogo: ' + jogo.nome);
+                container.appendChild(card);
+            });
+        }
+
+        window.addEventListener('load', () => {
+            carregarListaJogos();
+        });
+    </script>
 </body>
 </html>
