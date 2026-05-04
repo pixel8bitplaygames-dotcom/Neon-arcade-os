@@ -1,25 +1,77 @@
-*{margin:0;padding:0;box-sizing:border-box;touch-action:none;user-select:none;}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+/* REMOVIDO: touch-action:none; */
+
 body{
     font-family:'Press Start 2P','Segoe UI',sans-serif;
     background:#020205;
     color:white;
-    height:100vh;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    min-height:100vh; /* era height:100vh */
+    /* overflow:hidden; REMOVIDO */
+    /* display:flex; REMOVIDO */
+    /* align-items:center; REMOVIDO */
+    /* justify-content:center; REMOVIDO */
     background:radial-gradient(ellipse at center,#0a0a1a 0%,#000 70%);
 }
+
 body::before{
-    content:" ";position:absolute;top:0;left:0;bottom:0;right:0;
+    content:" ";position:fixed;top:0;left:0;bottom:0;right:0;
     background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,0.25) 50%),
                 linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06));
     z-index:1000;background-size:100% 4px,4px 100%;pointer-events:none;
     animation:flicker 0.15s infinite;
 }
+
 @keyframes flicker{0%,100%{opacity:1;}50%{opacity:0.98;}}
-.tela{display:none;width:100%;height:100vh;flex-direction:column;align-items:center;justify-content:center;position:absolute;}
-.ativa{display:flex;}
+
+/* ===== SISTEMA DE TELAS v9.9 FINAL ===== */
+.tela{
+    display:none;
+    width:100%;
+    min-height:100vh;
+    position:relative; /* era absolute */
+    background:#020205;
+}
+
+.tela.ativa{
+    display:block; /* era flex */
+}
+
+/* Tela inicial centralizada e fixa */
+#tela-inicial.ativa{
+    display:flex !important;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    position:fixed;
+    top:0;
+    left:0;
+    overflow:hidden;
+    touch-action:none;
+}
+
+/* Tela de menu com scroll liberado */
+#tela-menu.ativa{
+    padding:80px 20px 60px 20px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    touch-action:pan-y;
+}
+
+/* Tela de jogo trava tudo */
+#tela-jogo.ativa{
+    position:fixed;
+    height:100vh;
+    overflow:hidden;
+    touch-action:none;
+    display:flex !important;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    top:0;
+    left:0;
+}
+
 .logo-arcade{font-size:28px;color:#0ff;text-shadow:0 0 5px #0ff,0 0 10px #0ff,0 0 20px #0ff,0 0 40px #0ff;text-align:center;margin-bottom:20px;font-weight:900;animation:pulseNeon 2s ease-in-out infinite;}
 @keyframes pulseNeon{0%,100%{text-shadow:0 0 5px #0ff,0 0 10px #0ff,0 0 20px #0ff;}50%{text-shadow:0 0 10px #0ff,0 0 20px #0ff,0 0 40px #0ff,0 0 60px #0ff;}}
 .icon-controle{width:80px;height:80px;margin-bottom:20px;filter:drop-shadow(0 0 15px #0ff);animation:flutuar 2s ease-in-out infinite;}
@@ -28,9 +80,7 @@ body::before{
 @keyframes btnGlow{0%,100%{box-shadow:0 0 20px rgba(0,255,255,0.5),inset 0 0 0 2px #000;}50%{box-shadow:0 0 40px rgba(0,255,255,0.8),inset 0 0 0 2px #000;}}
 .btn-principal:active{transform:scale(0.95);background:#fff;}
 #btn-instalar{background:#ff6b00;display:none;margin-bottom:20px;}
-.container-jogos{display:grid;grid-template-columns:1fr;gap:15px;width:85%;max-width:400px;}
-.jogo-card{background:rgba(0,255,255,0.05);border:2px solid #0ff;padding:20px;text-align:center;font-size:12px;color:#0ff;cursor:pointer;transition:0.3s;box-shadow:0 0 10px rgba(0,255,255,0.3),inset 0 0 10px rgba(0,255,255,0.1);}
-.jogo-card:active{background:rgba(0,255,255,0.2);box-shadow:0 0 30px rgba(0,255,255,0.8),inset 0 0 20px rgba(0,255,255,0.3);transform:scale(0.98);}
+
 canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 100%);width:95vw;height:70vh;max-height:580px;box-shadow:0 0 20px rgba(0,255,255,0.4),inset 0 0 20px rgba(0,255,255,0.1);margin-top:60px;image-rendering:pixelated;}
 .header-jogo{width:100%;display:flex;justify-content:space-between;padding:12px 20px;position:absolute;top:0;z-index:10;background:rgba(0,0,0,0.5);}
 #score-live{color:#0ff;font-size:24px;text-shadow:0 0 10px #0ff;}
@@ -79,7 +129,6 @@ canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 1
     box-shadow: 0 0 20px #0ff, inset 0 0 10px rgba(0,255,255,0.2);
 }
 
-/* Botão de pausa melhorado */
 #btn-pausa {
     background: rgba(0,255,255,0.1);
     border: 2px solid #0ff;
@@ -97,6 +146,7 @@ canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 1
     box-shadow: 0 0 20px rgba(0,255,255,0.6);
     transform: scale(0.95);
 }
+
 /* ===== UPGRADE v9.9 - CARDS NEON ===== */
 .container-jogos {
     display: grid;
@@ -105,8 +155,7 @@ canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 1
     width: 90%;
     max-width: 1200px;
     padding: 20px;
-    overflow-y: auto;
-    max-height: 70vh;
+    margin: 0 auto;
 }
 
 .jogo-card {
@@ -210,53 +259,24 @@ canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 1
     box-shadow: none;
 }
 
+/* Título do menu grudado */
+#tela-menu h2 {
+    position: sticky;
+    top: 0;
+    background: #020205;
+    padding: 15px 0;
+    margin: 0 0 20px 0;
+    z-index: 100;
+    text-align: center;
+    font-size: 14px;
+    color: #0ff;
+    text-shadow: 0 0 10px #0ff;
+}
+
 @media (max-width: 768px) {
     .container-jogos { 
         grid-template-columns: 1fr; 
         width: 95%;
     }
-}
-/* ===== CORREÇÃO SCROLL MENU v9.9 ===== */
-/* Libera o body só quando tá no menu */
-body:has(#tela-menu.ativa) {
-    overflow: auto !important;
-    touch-action: pan-y !important;
-    height: auto !important;
-}
-
-/* Tela do menu com scroll liberado */
-#tela-menu {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    padding: 80px 20px 40px 20px !important;
-    display: block !important; /* Tira o flex que centraliza */
-}
-
-/* Título grudado no topo */
-#tela-menu h2 {
-    position: sticky !important;
-    top: 0 !important;
-    background: #020205 !important;
-    padding: 15px 0 !important;
-    margin: 0 0 20px 0 !important;
-    z-index: 100 !important;
-    text-align: center !important;
-}
-
-/* Container dos cards sem limite de altura */
-#tela-menu .container-jogos {
-    overflow: visible !important;
-    max-height: none !important;
-    height: auto !important;
-    padding-bottom: 60px !important; /* Espaço pra ver o último card */
-}
-
-/* Garante que nas outras telas continua travado */
-#tela-inicial, #tela-jogo {
-    overflow: hidden !important;
-    touch-action: none !important;
+    .logo-arcade { font-size: 20px; }
 }
