@@ -216,3 +216,47 @@ canvas{border:3px solid #0ff;background:radial-gradient(circle,#0a0a1a 0%,#000 1
         width: 95%;
     }
 }
+/* ===== CORREÇÃO SCROLL MENU v9.9 ===== */
+/* Libera o body só quando tá no menu */
+body:has(#tela-menu.ativa) {
+    overflow: auto !important;
+    touch-action: pan-y !important;
+    height: auto !important;
+}
+
+/* Tela do menu com scroll liberado */
+#tela-menu {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    padding: 80px 20px 40px 20px !important;
+    display: block !important; /* Tira o flex que centraliza */
+}
+
+/* Título grudado no topo */
+#tela-menu h2 {
+    position: sticky !important;
+    top: 0 !important;
+    background: #020205 !important;
+    padding: 15px 0 !important;
+    margin: 0 0 20px 0 !important;
+    z-index: 100 !important;
+    text-align: center !important;
+}
+
+/* Container dos cards sem limite de altura */
+#tela-menu .container-jogos {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding-bottom: 60px !important; /* Espaço pra ver o último card */
+}
+
+/* Garante que nas outras telas continua travado */
+#tela-inicial, #tela-jogo {
+    overflow: hidden !important;
+    touch-action: none !important;
+}
