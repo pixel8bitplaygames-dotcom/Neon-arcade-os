@@ -20,13 +20,13 @@ function iniciarDash(canvas) {
         noChao: true,
         cor: '#0ff',
         rotacao: 0,
-        rotacaoAlvo: 0 // Pra onde ele tem que girar
+        rotacaoAlvo: 0
     };
 
     // Chão
     const chao = H - 50;
 
-    // Obstáculos - TRIÂNGULOS/ESPINHOS
+    // Obstáculos - TRIÂNGULOS
     const obstaculos = [];
     let frameCount = 0;
     let velocidade = 6;
@@ -52,7 +52,7 @@ function iniciarDash(canvas) {
         if (!gameOver &&!pausado && player.noChao) {
             player.vy = player.jump;
             player.noChao = false;
-            player.rotacaoAlvo += Math.PI * 2; // GIRA 360° quando pula
+            player.rotacaoAlvo += Math.PI * 2; // GIRA 360° SÓ QUANDO PULA
         }
     }
 
@@ -92,7 +92,7 @@ function iniciarDash(canvas) {
             player.y = chao - player.h;
             player.vy = 0;
             player.noChao = true;
-            // Para de girar e alinha no chão
+            // PARA DE GIRAR NO CHÃO
             player.rotacao = 0;
             player.rotacaoAlvo = 0;
         } else {
@@ -118,7 +118,6 @@ function iniciarDash(canvas) {
                 y: chao - 30,
                 w: 30,
                 h: 30,
-                tipo: 'triangulo',
                 cor: '#f0f'
             });
 
@@ -163,7 +162,7 @@ function iniciarDash(canvas) {
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, W, H);
 
-        // Grid de fundo
+        // Grid de fundo animado
         ctx.strokeStyle = 'rgba(0,255,255,0.1)';
         ctx.lineWidth = 1;
         for (let i = 0; i < W; i += 40) {
@@ -173,7 +172,7 @@ function iniciarDash(canvas) {
             ctx.stroke();
         }
 
-        // Chão
+        // Chão neon
         ctx.fillStyle = '#0ff';
         ctx.shadowColor = '#0ff';
         ctx.shadowBlur = 10;
@@ -191,7 +190,6 @@ function iniciarDash(canvas) {
             ctx.fillStyle = obs.cor;
             ctx.shadowColor = obs.cor;
             ctx.shadowBlur = 15;
-            // Desenha triângulo
             ctx.beginPath();
             ctx.moveTo(obs.x, obs.y + obs.h);
             ctx.lineTo(obs.x + obs.w / 2, obs.y);
@@ -211,7 +209,7 @@ function iniciarDash(canvas) {
         ctx.fillRect(-player.w / 2, -player.h / 2, player.w, player.h);
         ctx.shadowBlur = 0;
         
-        // Borda do quadrado
+        // Borda branca
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.strokeRect(-player.w / 2, -player.h / 2, player.w, player.h);
