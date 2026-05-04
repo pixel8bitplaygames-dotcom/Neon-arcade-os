@@ -1,4 +1,4 @@
-// NEON RACER - v5.0 COMPLETO: ASAS + PULO + BARRINHAS
+// NEON RACER - v6.0 PULO NO TOQUE + CARROS FIX
 function iniciarRacer(canvas) {
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
@@ -16,10 +16,14 @@ function iniciarRacer(canvas) {
 
     // Power-ups
     let modoAsas = false;
-    let modoPulo = false;
-    let tempoAsas = 0; // 240 = 4s
-    let tempoPulo = 0; // 120 = 2s
+    let tempoAsas = 0;
+
+    // Sistema de PULO
+    let pulando = false;
+    let tempoPulo = 0;
     let alturaPulo = 0;
+    let podePuloduplo = false; // ← Diamante libera
+    let pulosRestantes = 1; // ← 1 normal, 2 com diamante
 
     const btnPause = { x: 350, y: 10, w: 40, h: 40 };
 
@@ -51,41 +55,31 @@ function iniciarRacer(canvas) {
     document.getElementById('record-live').textContent = "RECORDE: " + recorde;
     document.getElementById('score-live').textContent = '00000';
 
-    function desenharPixel(x, y, w, h, cor) {
-        ctx.fillStyle = cor;
-        ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(Math.floor(x), Math.floor(y), w, h);
-    }
-
-    function desenharAsasPixel(x, y) {
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.shadowColor = '#fff';
-        ctx.shadowBlur = 15;
-
-        // ASA ESQUERDA
-        desenharPixel(x - 28, y - 8, 4, 16, '#fff');
-        desenharPixel(x - 24, y - 12, 4, 20, '#fff');
-        desenharPixel(x - 20, y - 14, 4, 24, '#fff');
-        desenharPixel(x - 16, y - 10, 4, 16, '#fff');
-
-        // ASA DIREITA
-        desenharPixel(x + 24, y - 8, 4, 16, '#fff');
-        desenharPixel(x + 20, y - 12, 4, 20, '#fff');
-        desenharPixel(x + 16, y - 14, 4, 24, '#fff');
-        desenharPixel(x + 12, y - 10, 4, 16, '#fff');
-
-        ctx.shadowBlur = 0;
-    }
-
-    function desenharCarroPixel(x, y, tipo, ehPlayer = false) {
-        const dados = TIPOS_VEICULO;
+    // ← FIX: FUNÇÃO CORRIGIDA PRA DESENHAR CARRO
+    function desenharCarro(x, y, tipo, ehPlayer = false) {
+        const dados = TIPOS_VEICULO[tipo];
         ctx.save();
         ctx.translate(x, y - alturaPulo);
 
         if (ehPlayer && modoAsas) {
-            desenharAsasPixel(dados.w/2, dados.h/2);
+            // ASAS
+            ctx.fillStyle = '#fff';
+            ctx.shadowColor = '#fff';
+            ctx.shadowBlur = 15;
+
+            // ASA ESQUERDA
+            ctx.fillRect(-28, -8, 4, 16);
+            ctx.fillRect(-24, -12, 4, 20);
+            ctx.fillRect(-20, -14, 4, 24);
+            ctx.fillRect(-16, -10, 4, 16);
+
+            // ASA DIREITA
+            ctx.fillRect(dados.w + 24, -8, 4, 16);
+            ctx.fillRect(dados.w + 20, -12, 4, 20);
+            ctx.fillRect(dados.w + 16, -14, 4, 24);
+            ctx.fillRect(dados.w + 12, -10, 4, 16);
+
+            ctx.shadowBlur = 0;
         }
 
         if (ehPlayer &&!gameOverAtivo) {
@@ -95,7 +89,7 @@ function iniciarRacer(canvas) {
             ctx.fillText('▲', dados.w/2, -8);
         }
 
-        // Carroceria
+        // CARROCERIA - CORRIGIDO
         ctx.fillStyle = dados.cor;
         ctx.fillRect(0, 0, dados.w, dados.h);
         ctx.strokeStyle = '#000';
@@ -110,18 +104,22 @@ function iniciarRacer(canvas) {
             ctx.fillRect(6, 5, dados.w - 12, 8);
             ctx.strokeRect(6, 5, dados.w - 12, 8);
         } else {
+            // Vidro
             ctx.fillStyle = '#111';
             ctx.fillRect(4, 4, dados.w - 8, 10);
             ctx.strokeRect(4, 4, dados.w - 8, 10);
+            // Farol
             ctx.fillStyle = '#ff0';
             ctx.fillRect(2, 2, 4, 4);
             ctx.fillRect(dados.w - 6, 2, 4, 4);
+            // Lanterna
             ctx.fillStyle = '#f00';
             ctx.fillRect(4, dados.h - 6, 4, 4);
             ctx.fillRect(dados.w - 8, dados.h - 6, 4, 4);
         }
 
-        if (ehPlayer && (modoAsas || modoPulo)) {
+        // SOMBRA
+        if (ehPlayer && (modoAsas || pulando)) {
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath();
             ctx.ellipse(dados.w/2, dados.h + 15, dados.w/2, 6, 0, 0, Math.PI * 2);
@@ -138,8 +136,13 @@ function iniciarRacer(canvas) {
         if (p.tipo === 'ENERGIA') {
             ctx.shadowColor = '#0ff';
             ctx.shadowBlur = 15;
-            desenharPixel(-12, -16, 24, 32, '#0af');
-            desenharPixel(-8, -12, 16, 24, '#0ff');
+            ctx.fillStyle = '#0af';
+            ctx.fillRect(-12, -16, 24, 32);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect(-12, -16, 24, 32);
+            ctx.fillStyle = '#0ff';
+            ctx.fillRect(-8, -12, 16, 24);
+            ctx.strokeRect(-8, -12, 16, 24);
             ctx.fillStyle = '#fff';
             ctx.font = '16px Arial';
             ctx.textAlign = 'center';
@@ -148,14 +151,20 @@ function iniciarRacer(canvas) {
             ctx.shadowColor = '#fff';
             ctx.shadowBlur = 15;
             ctx.fillStyle = '#fff';
-            desenharPixel(-20, -4, 8, 8, '#fff');
-            desenharPixel(-12, -8, 8, 16, '#fff');
-            desenharPixel(-4, -12, 8, 24, '#fff');
-            desenharPixel(4, -8, 8, 16, '#fff');
-            desenharPixel(12, -4, 8, 8, '#fff');
+            ctx.fillRect(-20, -4, 8, 8);
+            ctx.strokeStyle = '#000';
+            ctx.strokeRect(-20, -4, 8, 8);
+            ctx.fillRect(-12, -8, 8, 16);
+            ctx.strokeRect(-12, -8, 8, 16);
+            ctx.fillRect(-4, -12, 8, 24);
+            ctx.strokeRect(-4, -12, 8, 24);
+            ctx.fillRect(4, -8, 8, 16);
+            ctx.strokeRect(4, -8, 8, 16);
+            ctx.fillRect(12, -4, 8, 8);
+            ctx.strokeRect(12, -4, 8, 8);
         } else if (p.tipo === 'DIAMANTE') {
             ctx.shadowColor = '#0ff';
-            ctx.shadowBlur = 20 + Math.sin(Date.now() / 100) * 10;
+            ctx.shadowBlur = 20;
 
             ctx.fillStyle = '#0af';
             ctx.beginPath();
@@ -212,7 +221,7 @@ function iniciarRacer(canvas) {
         ctx.fillStyle = '#fff';
         ctx.fillRect(282 + energia, 32, 2, 8);
 
-        // BARRINHA VERDE DAS ASAS
+        // BARRINHA ASAS
         if (tempoAsas > 0) {
             ctx.fillStyle = '#000';
             ctx.fillRect(10, 35, 104, 12);
@@ -227,7 +236,7 @@ function iniciarRacer(canvas) {
             ctx.fillText('ASAS', 12, 43);
         }
 
-        // BARRINHA AZUL DO PULO
+        // BARRINHA PULO
         if (tempoPulo > 0) {
             ctx.fillStyle = '#000';
             ctx.fillRect(10, 52, 104, 12);
@@ -240,6 +249,13 @@ function iniciarRacer(canvas) {
             ctx.fillStyle = '#fff';
             ctx.font = '6px "Press Start 2P"';
             ctx.fillText('PULO', 12, 60);
+        }
+
+        // INDICADOR PULO DUPLO
+        if (podePuloduplo &&!pulando) {
+            ctx.fillStyle = '#0ff';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('PULO DUPLO', 120, 25);
         }
 
         // Botão pause
@@ -274,10 +290,12 @@ function iniciarRacer(canvas) {
         powerups = [];
         tempoProxObstaculo = 0;
         modoAsas = false;
-        modoPulo = false;
+        pulando = false;
         tempoAsas = 0;
         tempoPulo = 0;
         alturaPulo = 0;
+        podePuloduplo = false;
+        pulosRestantes = 1;
         gameOverAtivo = false;
         pausado = false;
         ultimoTempo = performance.now();
@@ -348,8 +366,8 @@ function iniciarRacer(canvas) {
         let alvoX = pistas[player.pista] - player.w/2;
         player.x += (alvoX - player.x) * 0.4 * delta;
 
-        // ANIMAÇÃO PULO
-        if (modoPulo) {
+        // FÍSICA DO PULO
+        if (pulando) {
             alturaPulo = Math.sin((tempoPulo / 120) * Math.PI) * 60;
             player.y = player.yBase - alturaPulo;
         } else if (modoAsas) {
@@ -377,7 +395,7 @@ function iniciarRacer(canvas) {
                 y: -70,
                 pista: pistaAleatoria,
                 tipo: tipoEscolhido,
-          ...dados
+        ...dados
             });
             tempoProxObstaculo = Math.max(25, 60 - velocidade * 1.5);
         }
@@ -396,9 +414,10 @@ function iniciarRacer(canvas) {
         // Atualiza obstáculos
         obstaculos = obstaculos.filter(obs => {
             obs.y += obs.vel * velocidade * delta;
-            desenharCarroPixel(obs.x, obs.y, obs.tipo, false);
+            desenharCarro(obs.x, obs.y, obs.tipo, false);
 
-            if(!modoAsas &&!modoPulo &&
+            // Colisão - ignora se voando ou pulando
+            if(!modoAsas &&!pulando &&
                obs.y + obs.h > player.y &&
                obs.y < player.y + player.h &&
                obs.pista === player.pista) {
@@ -442,12 +461,13 @@ function iniciarRacer(canvas) {
         if (tempoPulo > 0) {
             tempoPulo -= delta;
             if (tempoPulo <= 0) {
-                modoPulo = false;
+                pulando = false;
+                pulosRestantes = podePuloduplo? 2 : 1;
             }
         }
 
         // Desenha player
-        desenharCarroPixel(player.x, player.y, 'VERMELHO', true);
+        desenharCarro(player.x, player.y, 'VERMELHO', true);
 
         desenharHUD();
         animFrameId = requestAnimationFrame(loop);
@@ -457,11 +477,11 @@ function iniciarRacer(canvas) {
         if (tipo === 'ENERGIA') {
             energia = Math.min(100, energia + 40);
         } else if (tipo === 'ASAS') {
-            tempoAsas = 240; // 4 segundos
+            tempoAsas = 240;
             modoAsas = true;
         } else if (tipo === 'DIAMANTE') {
-            tempoPulo = 120; // 2 segundos
-            modoPulo = true;
+            podePuloduplo = true;
+            pulosRestantes = 2;
         }
     }
 
@@ -509,8 +529,11 @@ function iniciarRacer(canvas) {
         canvas.addEventListener('touchstart', reiniciarClick);
     }
 
-    // Controles
+    // CONTROLES - ARRASTA PRA LADO / TOQUE PRA PULAR
     let inicioToqueX = 0;
+    let inicioToqueTempo = 0;
+    let arrastando = false;
+
     function handleTouchStart(e) {
         const rect = canvas.getBoundingClientRect();
         const x = (e.touches[0].clientX - rect.left) * (canvas.width / rect.width);
@@ -529,17 +552,36 @@ function iniciarRacer(canvas) {
         }
 
         inicioToqueX = e.touches[0].clientX;
+        inicioToqueTempo = Date.now();
+        arrastando = false;
     }
 
     function handleTouchMove(e) {
         if(!pausado &&!gameOverAtivo) e.preventDefault();
+        arrastando = true;
     }
 
     function handleTouchEnd(e) {
         if(pausado || gameOverAtivo) return;
+
         let diff = e.changedTouches[0].clientX - inicioToqueX;
-        if(diff > 25 && player.pista < 2) player.pista++;
-        if(diff < -25 && player.pista > 0) player.pista--;
+        let tempoToque = Date.now() - inicioToqueTempo;
+
+        // TOQUE RÁPIDO = PULA
+        if (!arrastando || (Math.abs(diff) < 15 && tempoToque < 200)) {
+            if (pulosRestantes > 0 &&!pulando) {
+                pulando = true;
+                tempoPulo = 120;
+                pulosRestantes--;
+                if (pulosRestantes === 0) {
+                    podePuloduplo = false;
+                }
+            }
+        } else {
+            // ARRASTA = MUDA PISTA
+            if(diff > 25 && player.pista < 2) player.pista++;
+            if(diff < -25 && player.pista > 0) player.pista--;
+        }
     }
 
     canvas.addEventListener('touchstart', handleTouchStart, {passive: true});
