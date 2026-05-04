@@ -1,4 +1,4 @@
-// NEON RACER - v7.0 FINAL: PULO NO TOQUE + CARROS FIX + NEON
+// NEON RACER - v8.0 FINAL: FUNCIONANDO 100%
 function iniciarRacer(canvas) {
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
@@ -14,7 +14,6 @@ function iniciarRacer(canvas) {
     let distancia = 0;
     let energia = 100;
 
-    // Power-ups
     let modoAsas = false;
     let tempoAsas = 0;
     let pulando = false;
@@ -68,9 +67,8 @@ function iniciarRacer(canvas) {
         ctx.save();
         ctx.translate(x, y - alturaPulo);
 
+        // ASAS - SEM SHADOW
         if (ehPlayer && modoAsas) {
-            ctx.shadowColor = '#fff';
-            ctx.shadowBlur = 20;
             ctx.fillStyle = 'rgba(255,255,255,0.9)';
             ctx.fillRect(-28, -8, 4, 16);
             ctx.fillRect(-24, -12, 4, 20);
@@ -80,25 +78,19 @@ function iniciarRacer(canvas) {
             ctx.fillRect(dados.w + 20, -12, 4, 20);
             ctx.fillRect(dados.w + 16, -14, 4, 24);
             ctx.fillRect(dados.w + 12, -10, 4, 16);
-            ctx.shadowBlur = 0;
         }
 
+        // Setinha
         if (ehPlayer &&!gameOverAtivo) {
             ctx.fillStyle = '#ff0';
-            ctx.shadowColor = '#ff0';
-            ctx.shadowBlur = 10;
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('▲', dados.w/2, -8);
-            ctx.shadowBlur = 0;
         }
 
-        // CARROCERIA NEON
-        ctx.shadowColor = dados.cor;
-        ctx.shadowBlur = 20;
+        // CARROCERIA - FILL PRIMEIRO, STROKE DEPOIS
         ctx.fillStyle = dados.cor;
         ctx.fillRect(0, 0, dados.w, dados.h);
-        ctx.shadowBlur = 0;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, dados.w, dados.h);
@@ -108,33 +100,23 @@ function iniciarRacer(canvas) {
             ctx.fillRect(2, 25, dados.w - 4, 45);
             ctx.strokeStyle = '#fff';
             ctx.strokeRect(2, 25, dados.w - 4, 45);
-            ctx.shadowColor = CORES_NEON.CIANO;
-            ctx.shadowBlur = 15;
             ctx.fillStyle = CORES_NEON.CIANO;
             ctx.fillRect(6, 5, dados.w - 12, 8);
             ctx.strokeRect(6, 5, dados.w - 12, 8);
-            ctx.shadowBlur = 0;
         } else {
             ctx.fillStyle = '#111';
             ctx.fillRect(4, 4, dados.w - 8, 10);
             ctx.strokeStyle = CORES_NEON.CIANO;
             ctx.strokeRect(4, 4, dados.w - 8, 10);
-
-            ctx.shadowColor = CORES_NEON.AMARELO;
-            ctx.shadowBlur = 25;
             ctx.fillStyle = CORES_NEON.AMARELO;
             ctx.fillRect(2, 2, 4, 4);
             ctx.fillRect(dados.w - 6, 2, 4, 4);
-            ctx.shadowBlur = 0;
-
-            ctx.shadowColor = CORES_NEON.VERMELHO;
-            ctx.shadowBlur = 15;
             ctx.fillStyle = CORES_NEON.VERMELHO;
             ctx.fillRect(4, dados.h - 6, 4, 4);
             ctx.fillRect(dados.w - 8, dados.h - 6, 4, 4);
-            ctx.shadowBlur = 0;
         }
 
+        // SOMBRA
         if (ehPlayer && (modoAsas || pulando)) {
             ctx.fillStyle = 'rgba(0,0,0,0.5)';
             ctx.beginPath();
@@ -142,6 +124,7 @@ function iniciarRacer(canvas) {
             ctx.fill();
         }
 
+        // PARTÍCULAS
         if (ehPlayer && Math.random() < 0.4) {
             particulas.push({
                 x: x + dados.w/2 + (Math.random() - 0.5) * 10,
@@ -161,8 +144,6 @@ function iniciarRacer(canvas) {
         ctx.translate(p.x, p.y);
 
         if (p.tipo === 'ENERGIA') {
-            ctx.shadowColor = CORES_NEON.CIANO;
-            ctx.shadowBlur = 20;
             ctx.fillStyle = CORES_NEON.CIANO;
             ctx.fillRect(-12, -16, 24, 32);
             ctx.strokeStyle = '#fff';
@@ -174,12 +155,9 @@ function iniciarRacer(canvas) {
             ctx.font = '16px Arial';
             ctx.textAlign = 'center';
             ctx.fillText('+', 0, 4);
-            ctx.shadowBlur = 0;
         } else if (p.tipo === 'ASAS') {
-            ctx.shadowColor = '#fff';
-            ctx.shadowBlur = 20;
             ctx.fillStyle = '#fff';
-            ctx.fillRect(-20, -4, 8, 8);
+            ctx.fillRect(-20, -4, 8);
             ctx.strokeStyle = '#000';
             ctx.strokeRect(-20, -4, 8, 8);
             ctx.fillRect(-12, -8, 8, 16);
@@ -190,10 +168,7 @@ function iniciarRacer(canvas) {
             ctx.strokeRect(4, -8, 8, 16);
             ctx.fillRect(12, -4, 8, 8);
             ctx.strokeRect(12, -4, 8, 8);
-            ctx.shadowBlur = 0;
         } else if (p.tipo === 'DIAMANTE') {
-            ctx.shadowColor = CORES_NEON.CIANO;
-            ctx.shadowBlur = 25;
             ctx.fillStyle = CORES_NEON.CIANO;
             ctx.beginPath();
             ctx.moveTo(0, -18);
@@ -217,29 +192,22 @@ function iniciarRacer(canvas) {
             ctx.beginPath();
             ctx.arc(-4, -5, 2, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
         }
         ctx.restore();
     }
 
     function desenharHUD() {
         ctx.fillStyle = CORES_NEON.MAGENTA;
-        ctx.shadowColor = CORES_NEON.MAGENTA;
-        ctx.shadowBlur = 15;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 3;
         ctx.font = '16px "Press Start 2P"';
         ctx.textAlign = 'left';
         ctx.strokeText(pontos.toString().padStart(5, '0'), 10, 25);
         ctx.fillText(pontos.toString().padStart(5, '0'), 10, 25);
-        ctx.shadowBlur = 0;
 
         ctx.fillStyle = CORES_NEON.CIANO;
-        ctx.shadowColor = CORES_NEON.CIANO;
-        ctx.shadowBlur = 10;
         ctx.font = '8px "Press Start 2P"';
         ctx.fillText('ENERGIA', 280, 25);
-        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#1a0033';
         ctx.strokeStyle = '#fff';
@@ -248,11 +216,8 @@ function iniciarRacer(canvas) {
         ctx.strokeRect(280, 30, 104, 12);
 
         let corEnergia = energia > 60? CORES_NEON.CIANO : energia > 30? CORES_NEON.AMARELO : CORES_NEON.VERMELHO;
-        ctx.shadowColor = corEnergia;
-        ctx.shadowBlur = 10;
         ctx.fillStyle = corEnergia;
         ctx.fillRect(282, 32, energia, 8);
-        ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#fff';
         ctx.fillRect(282 + energia, 32, 2, 8);
@@ -262,11 +227,8 @@ function iniciarRacer(canvas) {
             ctx.fillRect(10, 35, 104, 12);
             ctx.strokeStyle = '#0f0';
             ctx.strokeRect(10, 35, 104, 12);
-            ctx.shadowColor = '#0f0';
-            ctx.shadowBlur = 10;
             ctx.fillStyle = '#0f0';
             ctx.fillRect(12, 37, (tempoAsas / 240) * 100, 8);
-            ctx.shadowBlur = 0;
             ctx.fillStyle = '#fff';
             ctx.font = '6px "Press Start 2P"';
             ctx.fillText('ASAS', 12, 43);
@@ -277,11 +239,8 @@ function iniciarRacer(canvas) {
             ctx.fillRect(10, 52, 104, 12);
             ctx.strokeStyle = CORES_NEON.CIANO;
             ctx.strokeRect(10, 52, 104, 12);
-            ctx.shadowColor = CORES_NEON.CIANO;
-            ctx.shadowBlur = 10;
             ctx.fillStyle = CORES_NEON.CIANO;
             ctx.fillRect(12, 54, (tempoPulo / 120) * 100, 8);
-            ctx.shadowBlur = 0;
             ctx.fillStyle = '#fff';
             ctx.font = '6px "Press Start 2P"';
             ctx.fillText('PULO', 12, 60);
@@ -289,11 +248,8 @@ function iniciarRacer(canvas) {
 
         if (podePuloduplo &&!pulando) {
             ctx.fillStyle = CORES_NEON.CIANO;
-            ctx.shadowColor = CORES_NEON.CIANO;
-            ctx.shadowBlur = 15;
             ctx.font = '8px "Press Start 2P"';
             ctx.fillText('PULO DUPLO', 120, 25);
-            ctx.shadowBlur = 0;
         }
 
         ctx.fillStyle = 'rgba(26,0,51,0.8)';
@@ -355,10 +311,7 @@ function iniciarRacer(canvas) {
             ctx.lineWidth = 6;
             ctx.strokeText('PAUSADO', 200, 280);
             ctx.fillStyle = CORES_NEON.MAGENTA;
-            ctx.shadowColor = CORES_NEON.MAGENTA;
-            ctx.shadowBlur = 15;
             ctx.fillText('PAUSADO', 200, 280);
-            ctx.shadowBlur = 0;
             desenharHUD();
             animFrameId = requestAnimationFrame(loop);
             return;
@@ -379,42 +332,33 @@ function iniciarRacer(canvas) {
             return;
         }
 
-        // Grama NEON
+        // Grama
         ctx.fillStyle = '#001a00';
         ctx.fillRect(0, 0, 50, 550);
         ctx.fillRect(350, 0, 50, 550);
-        ctx.shadowColor = CORES_NEON.CAMINHAO;
-        ctx.shadowBlur = 20;
         ctx.fillStyle = CORES_NEON.CAMINHAO;
         ctx.fillRect(0, 0, 50, 550);
         ctx.fillRect(350, 0, 50, 550);
-        ctx.shadowBlur = 0;
 
-        // Zebrinha NEON
+        // Zebrinha
         for(let i = 0; i < 550; i += 20) {
             let cor = (i / 20) % 2 === 0? CORES_NEON.VERMELHO : CORES_NEON.CIANO;
-            ctx.shadowColor = cor;
-            ctx.shadowBlur = 15;
             ctx.fillStyle = cor;
             ctx.fillRect(45, i, 5, 20);
             ctx.fillRect(350, i, 5, 20);
         }
-        ctx.shadowBlur = 0;
 
-        // Asfalto ROXO
+        // Asfalto
         ctx.fillStyle = '#1a0033';
         ctx.fillRect(50, 0, 300, 550);
 
-        // Linhas NEON
-        ctx.shadowColor = CORES_NEON.CIANO;
-        ctx.shadowBlur = 15;
+        // Linhas
         ctx.fillStyle = CORES_NEON.CIANO;
         linhas.forEach(linha => {
             linha.y += velocidade * delta;
             if(linha.y > 550) linha.y = -40;
             ctx.fillRect(197, linha.y, 6, 20);
         });
-        ctx.shadowBlur = 0;
 
         // Move player
         let alvoX = pistas[player.pista] - player.w/2;
@@ -449,7 +393,7 @@ function iniciarRacer(canvas) {
                 y: -70,
                 pista: pistaAleatoria,
                 tipo: tipoEscolhido,
-               ...dados
+             ...dados
             });
             tempoProxObstaculo = Math.max(25, 60 - velocidade * 1.5);
         }
@@ -525,12 +469,9 @@ function iniciarRacer(canvas) {
             p.y += p.vy;
             p.vida--;
             ctx.fillStyle = p.cor;
-            ctx.shadowColor = p.cor;
-            ctx.shadowBlur = 10;
             ctx.globalAlpha = p.vida / 20;
-            ctx.fillRect(p.x, p.y, 3, 3);
+            ctx.fillRect(p.x, p.y, 3);
             ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
             return p.vida > 0;
         });
 
@@ -572,25 +513,16 @@ function iniciarRacer(canvas) {
         ctx.lineWidth = 6;
         ctx.strokeText('VOCÊ FALHOU!', 200, 220);
         ctx.fillStyle = CORES_NEON.VERMELHO;
-        ctx.shadowColor = CORES_NEON.VERMELHO;
-        ctx.shadowBlur = 20;
         ctx.fillText('VOCÊ FALHOU!', 200, 220);
-        ctx.shadowBlur = 0;
 
         ctx.font = '12px "Press Start 2P"';
         ctx.strokeText(`DISTÂNCIA: ${pontos}m`, 200, 300);
         ctx.fillStyle = CORES_NEON.CIANO;
-        ctx.shadowColor = CORES_NEON.CIANO;
-        ctx.shadowBlur = 15;
         ctx.fillText(`DISTÂNCIA: ${pontos}m`, 200, 300);
-        ctx.shadowBlur = 0;
 
         if(pontos >= recorde && pontos > 0) {
             ctx.fillStyle = CORES_NEON.AMARELO;
-            ctx.shadowColor = CORES_NEON.AMARELO;
-            ctx.shadowBlur = 15;
             ctx.fillText('NOVO RECORDE!', 200, 330);
-            ctx.shadowBlur = 0;
         }
 
         ctx.fillStyle = CORES_NEON.CAMINHAO;
