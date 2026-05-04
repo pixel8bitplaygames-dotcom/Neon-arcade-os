@@ -1,17 +1,17 @@
-// NEON ARCADE OS - CORE v1.8
-// Agora com Notificações + Pausa funcionando
+// NEON ARCADE OS - CORE v1.9
+// Cards v9.9 + Notificações + Pausa funcionando
 
 const JOGOS = [
-  { id: 'snake', nome: '🐍 NEON SNAKE', arquivo: './games/snake.js' },
-  { id: 'breakout', nome: '🧱 NEON BREAKOUT', arquivo: './games/breakout.js' },
-  { id: 'hacker', nome: '👾 NEON HACKER', arquivo: './games/hacker.js' },
-  { id: 'racer', nome: '🏎️ NEON RACER', arquivo: './games/racer.js' },
-  { id: 'byte', nome: '🦠 NEON BYTE', arquivo: './games/byte.js' },
-  { id: 'dash', nome: '▲ NEON DASH', arquivo: './games/dash.js' },
-  { id: 'pong', nome: '🏓 NEON PONG', arquivo: './games/pong.js' },
-  { id: 'space', nome: '🚀 NEON SPACE', arquivo: './games/space.js' },
-  { id: 'tetris', nome: '⬜ NEON TETRIS', arquivo: './games/tetris.js' },
-  { id: 'flappy', nome: '🐦 NEON FLAPPY', arquivo: './games/flappy.js' }
+  { id: 'snake', nome: 'NEON SNAKE', emoji: '🐍', desc: 'Clássico snake com visual neon. Swipe perfeito!', arquivo: './games/snake.js', ativo: true },
+  { id: 'breakout', nome: 'NEON BREAKOUT', emoji: '🧱', desc: 'Quebre todos os blocos. Paddle com touch suave!', arquivo: './games/breakout.js', ativo: true },
+  { id: 'hacker', nome: 'NEON HACKER', emoji: '👾', desc: 'Decifre o código. Hacker mode ativado!', arquivo: './games/hacker.js', ativo: true },
+  { id: 'racer', nome: 'NEON RACER', emoji: '🏎️', desc: 'Desvie dos carros. Velocidade neon!', arquivo: './games/racer.js', ativo: true },
+  { id: 'byte', nome: 'NEON BYTE', emoji: '🦠', desc: 'Coma os bytes. Evite o antivírus!', arquivo: './games/byte.js', ativo: true },
+  { id: 'dash', nome: 'NEON DASH', emoji: '▲', desc: 'Quadrado que gira no ar. Pule os espinhos!', arquivo: './games/dash.js', ativo: true },
+  { id: 'pong', nome: 'NEON PONG', emoji: '🏓', desc: 'O clássico ping-pong em neon. 1P vs CPU!', arquivo: './games/pong.js', ativo: true },
+  { id: 'space', nome: 'NEON SPACE', emoji: '🚀', desc: 'Nave no espaço. Desvie e atire!', arquivo: './games/space.js', ativo: false },
+  { id: 'tetris', nome: 'NEON TETRIS', emoji: '⬜', desc: 'Empilhe os blocos. Clássico absoluto!', arquivo: './games/tetris.js', ativo: false },
+  { id: 'flappy', nome: 'NEON FLAPPY', emoji: '🐦', desc: 'Passe pelos canos. Um toque vicia!', arquivo: './games/flappy.js', ativo: false }
 ];
 
 let jogoAtivo = null;
@@ -23,18 +23,12 @@ function notificar(msg, tipo = 'info') {
     notif.className = `notificacao notificacao-${tipo}`;
     notif.textContent = msg;
     document.body.appendChild(notif);
-    
-    // Animação de entrada
     setTimeout(() => notif.classList.add('mostrar'), 10);
-    
-    // Remove depois de 3s
     setTimeout(() => {
         notif.classList.remove('mostrar');
         setTimeout(() => notif.remove(), 300);
     }, 3000);
 }
-
-// Deixa global pros jogos usarem
 window.notificar = notificar;
 
 // PWA - Botão de instalar
@@ -68,15 +62,13 @@ function irParaMenu() {
         jogoAtivo.parar();
         jogoAtivo = null;
     }
-    // FIX: Clona o canvas pra matar TODOS os event listeners antigos
     const canvasVelho = document.getElementById('canvas');
     const canvasNovo = canvasVelho.cloneNode(true);
     canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
-    
-    // Reseta botão de pausa
+
     const btnPausa = document.getElementById('btn-pausa');
     if(btnPausa) btnPausa.textContent = '⏸️ PAUSAR';
-    
+
     mostrarTela('tela-menu');
     carregarListaJogos();
 }
@@ -85,15 +77,28 @@ function voltarMenu() {
     irParaMenu();
 }
 
-// Carrega lista de jogos no menu
+// CARREGA LISTA DE JOGOS - VERSÃO v9.9 COM CARDS
 function carregarListaJogos() {
     const container = document.getElementById('lista-jogos');
     container.innerHTML = '';
+    
     JOGOS.forEach(jogo => {
+        const hs = localStorage.getItem(`hs_${jogo.id}`) || 0;
         const card = document.createElement('div');
-        card.className = 'jogo-card';
-        card.textContent = jogo.nome;
-        card.onclick = () => carregarJogo(jogo.id);
+        card.className = `jogo-card ${jogo.ativo ? '' : 'disabled'}`;
+        card.innerHTML = `
+            ${jogo.ativo 
+                ? `<div class="badge-hs">HS: ${hs}</div>` 
+                : `<div class="badge-em-breve">EM BREVE</div>`
+            }
+            <div class="game-preview">${jogo.emoji}</div>
+            <h3>${jogo.nome}</h3>
+            <p>${jogo.desc}</p>
+            <button class="btn-jogar ${jogo.ativo ? '' : 'disabled'}" 
+                    ${jogo.ativo ? `onclick="carregarJogo('${jogo.id}')"` : 'disabled'}>
+                ${jogo.ativo ? 'JOGAR' : 'INDISPONÍVEL'}
+            </button>
+        `;
         container.appendChild(card);
     });
 }
@@ -101,19 +106,19 @@ function carregarListaJogos() {
 // Carrega o arquivo do jogo só quando clica
 function carregarJogo(idJogo) {
     const jogo = JOGOS.find(j => j.id === idJogo);
-    if (!jogo) return;
+    if (!jogo || !jogo.ativo) {
+        notificar(`${jogo.nome} - EM BREVE 🚧`, 'info');
+        return;
+    }
 
-    // Para jogo anterior se existir
     if (jogoAtivo) {
         jogoAtivo.parar();
         jogoAtivo = null;
     }
 
-    // Remove script antigo se existir
     const scriptVelho = document.getElementById('script-jogo');
     if (scriptVelho) scriptVelho.remove();
 
-    // FIX: Clona o canvas antes de carregar jogo novo
     const canvasVelho = document.getElementById('canvas');
     const canvasNovo = canvasVelho.cloneNode(true);
     canvasVelho.parentNode.replaceChild(canvasNovo, canvasVelho);
