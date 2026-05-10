@@ -52,7 +52,7 @@
             z-index: 10;
         }
 
-       .hud-item {
+      .hud-item {
             color: #fff;
             font-size: 10px;
         }
@@ -76,7 +76,7 @@
     </div>
 
     <script>
-        // NEON RACER - v9.1 CORRIGIDO E TESTADO
+        // NEON RACER - v10.0 SEM BUGS
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
@@ -140,8 +140,8 @@
         document.getElementById('record-live').textContent = "RECORDE: " + recorde;
         document.getElementById('score-live').textContent = '00000';
 
-        function desenharCarro(x, y, tipo, ehPlayer = false) {
-            const dados = TIPOS_VEICULO[tipo];
+        function desenharCarro(x, y, tipo, ehPlayer) {
+            const dados = TIPOS_VEICULO;
             ctx.save();
             ctx.translate(x, y - alturaPulo);
 
@@ -459,7 +459,10 @@
                     y: -70,
                     pista: pistaAleatoria,
                     tipo: tipoEscolhido,
-                 ...dados
+                    w: dados.w,
+                    h: dados.h,
+                    vel: dados.vel,
+                    pontos: dados.pontos
                 });
                 tempoProxObstaculo = Math.max(25, 60 - velocidade * 1.5);
             }
