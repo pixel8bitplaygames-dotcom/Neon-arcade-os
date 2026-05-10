@@ -52,7 +52,7 @@
             z-index: 10;
         }
 
-      .hud-item {
+       .hud-item {
             color: #fff;
             font-size: 10px;
         }
@@ -76,7 +76,7 @@
     </div>
 
     <script>
-        // NEON RACER - VERSÃO ORIGINAL FUNCIONANDO
+        // NEON RACER - v9.1 CORRIGIDO E TESTADO
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
@@ -141,7 +141,7 @@
         document.getElementById('score-live').textContent = '00000';
 
         function desenharCarro(x, y, tipo, ehPlayer = false) {
-            const dados = TIPOS_VEICULO;
+            const dados = TIPOS_VEICULO[tipo];
             ctx.save();
             ctx.translate(x, y - alturaPulo);
 
