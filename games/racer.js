@@ -39,7 +39,6 @@
             display: block;
             background: #1a0033;
             border: 4px solid #00ffff;
-            box-shadow: 0 0 20px #00ffff;
         }
 
         #hud {
@@ -56,7 +55,6 @@
        .hud-item {
             color: #fff;
             font-size: 10px;
-            text-shadow: 0 0 10px #ff006e;
         }
 
         #score-live {
@@ -65,6 +63,49 @@
 
         #record-live {
             color: #00f5ff;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 0, 21, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #start-screen h1 {
+            color: #ff006e;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #ff006e;
+        }
+
+        #start-screen p {
+            color: #00f5ff;
+            font-size: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        #btn-start {
+            background: #00ff41;
+            color: #000;
+            border: 3px solid #fff;
+            padding: 15px 30px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        #btn-start:active {
+            background: #00cc33;
         }
     </style>
 </head>
@@ -75,10 +116,16 @@
             <div class="hud-item" id="record-live">RECORDE: 0</div>
         </div>
         <canvas id="game-canvas" width="400" height="550"></canvas>
+
+        <div id="start-screen">
+            <h1>NEON RACER</h1>
+            <p>ARRASTA ← → PRA MUDAR PISTA<br>TOQUE RÁPIDO PRA PULAR</p>
+            <button id="btn-start">JOGAR</button>
+        </div>
     </div>
 
     <script>
-        // NEON RACER - v9.0 FUNCIONANDO 100% SEM BUGS
+        // NEON RACER - v9.0 FUNCIONANDO
         function iniciarRacer(canvas) {
             const ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
@@ -461,7 +508,7 @@
                         y: -70,
                         pista: pistaAleatoria,
                         tipo: tipoEscolhido,
-                       ...dados
+                      ...dados
                     });
                     tempoProxObstaculo = Math.max(25, 60 - velocidade * 1.5);
                 }
@@ -678,8 +725,9 @@
             };
         }
 
-        // INICIA O JOGO AUTOMATICAMENTE
-        window.addEventListener('load', () => {
+        // INICIA O JOGO QUANDO CLICAR NO BOTÃO
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
             const canvas = document.getElementById('game-canvas');
             iniciarRacer(canvas);
         });
